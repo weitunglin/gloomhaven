@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMessageBox>
+#include <iostream>
+
+#include "gloomhaven.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,7 +19,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_playButton_clicked();
+
+    void on_exitButton_clicked();
+
 private:
     Ui::MainWindow *ui;
+    Gloomhaven* game;
 };
 #endif // MAINWINDOW_H
