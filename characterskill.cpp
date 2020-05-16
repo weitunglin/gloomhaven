@@ -5,17 +5,15 @@ CharacterSkill::CharacterSkill(QObject *parent) : QObject(parent)
 
 }
 
-QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs) {
-  QString line = f.readLine();
-  line.remove(0, 1);
-
-  std::cout << line.toStdString() << std::endl;
-//  int value;
-//  f >> key;
-//  while (key != "-") {
-//     f >> value;
-//     rhs.skills.push_back({key, value});
-//     f >> key;
-//  }
-  return f;
+void CharacterSkill::setUp(QString s) {
+    QTextStream ss(&s);
+//    std::cout << "string:" << s.toStdString() << std::endl;
+    QString key;
+    int value;
+    do {
+        ss >> key >> value;
+        if (key == "" && value == 0) break;
+        std::cout << "key:" << key.toStdString() << ",value:" << value << std::endl;
+        skills.push_back({key, value});
+    } while (!ss.atEnd());
 }
