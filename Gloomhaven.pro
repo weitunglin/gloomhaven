@@ -16,31 +16,36 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    action.cpp \
     character.cpp \
     characterdata.cpp \
     characterskill.cpp \
     gloomhaven.cpp \
     main.cpp \
     mainwindow.cpp \
-    map.cpp
+    map.cpp \
+    point.cpp \
+    pregame.cpp
 
 HEADERS += \
+    action.h \
     character.h \
     characterdata.h \
     characterskill.h \
     gloomhaven.h \
     mainwindow.h \
-    map.h
+    map.h \
+    point.h \
+    pregame.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    pregame.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-DISTFILES += \
-    character1.txt \
-    map1.txt \
-    monster1.txt
+RESOURCES += \
+    image.qrc

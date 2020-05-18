@@ -8,15 +8,21 @@
 #include <iostream>
 #include <vector>
 
+#include "action.h"
+
 class CharacterSkill : public QObject
 {
     Q_OBJECT
 public:
     explicit CharacterSkill(QObject *parent = nullptr);
+    friend QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs);
     void setUp(QString s);
 
 private:
-    std::vector<std::pair<QString, int>> skills;
+    int cardId;
+    int agile;
+    Action up;
+    Action down;
 
 signals:
 

@@ -1,19 +1,19 @@
 #include "gloomhaven.h"
 
-Gloomhaven::Gloomhaven(QObject *parent) : QObject(parent)
+Gloomhaven::Gloomhaven(QWidget *parent) : QWidget(parent), CharacterData()
 {
 
 }
 
-Gloomhaven::Gloomhaven(QObject *parent, std::string cFilename, std::string mFilename, int mode) : QObject(parent)
+Gloomhaven::Gloomhaven(QWidget *parent, QString cFilename, QString mFilename, int mode) : QWidget(parent), CharacterData()
 {
     characterFilename = cFilename;
     monsterFilename = mFilename;
     debugMode = mode;
-    QFile file(QString::fromStdString(characterFilename));
-    trace(characterFilename);
+    QFile file(":/files/" + characterFilename);
+    trace(characterFilename.toStdString());
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        std::cout << "file save" << std::endl;
+        std::cout << "open file " << characterFilename.toStdString() << std::endl;
         QTextStream f(&file);
         QString line = f.readLine();
         characterAmount = line.toInt();
@@ -24,4 +24,33 @@ Gloomhaven::Gloomhaven(QObject *parent, std::string cFilename, std::string mFile
         }
     }
     file.close();
+    preGameInput();
+}
+
+void Gloomhaven::preGameInput() {
+    QInputDialog *inputDialog = new QInputDialog(this);
+    inputDialog->adjustSize();
+    QString string, mapData;
+    bool ok = false;
+    do {
+        string = inputDialog->getMultiLineText(this, "請輸入出場角色數量", "出場角色數量及卡牌:", "2\nbrute 0 1 2 3 4 5\nbrute 2 3 4 5 6 7", &ok, inputDialog->windowFlags());
+    } while (!ok);
+    if (!string.isEmpty()) {
+        std::cout << string.toStdString() << std::endl;
+    }
+    do {
+        mapData = inputDialog->getText(this, "請輸入地圖資料", "地圖資料：", QLineEdit::Normal, "map1.txt", &ok, inputDialog->windowFlags());
+    } while (!ok);
+    if (!mapData.isEmpty()) {
+        std::cout << mapData.toStdString() << std::endl;
+        mapFilename = mapData;
+    }
+    map = new Map();
+    QFile file(":/files/" + mapFilename);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cout << "open file " << mapFilename.toStdString() << std::endl;
+        QTextStream f(&file);
+        f >> *map;
+    }
+    delete inputDialog;
 }

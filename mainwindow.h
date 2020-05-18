@@ -3,7 +3,11 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #include "gloomhaven.h"
 
@@ -18,14 +22,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-private slots:
-    void on_playButton_clicked();
-
-    void on_exitButton_clicked();
+    Gloomhaven* game;
+    void showMap();
+    void drawBlock(QGraphicsScene * scene, int r, int c, std::vector<Point2d>& traveled, int itemWidth, int itemHeight);
+    bool inVision(Point2d p);
 
 private:
     Ui::MainWindow *ui;
-    Gloomhaven* game;
 };
 #endif // MAINWINDOW_H

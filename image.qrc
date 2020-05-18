@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>map_door.jpeg</file>
+        <file>map_floor_with_start.jpg</file>
+        <file>map_floor</file>
+    </qresource>
+    <qresource prefix="/files">
+        <file>character1.txt</file>
+        <file>map1.txt</file>
+        <file>monster1.txt</file>
+    </qresource>
+</RCC>

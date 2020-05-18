@@ -4,8 +4,9 @@
 #include <QObject>
 #include <QDataStream>
 #include <QTextStream>
+#include <QString>
 
-#include "characterskill.h"
+#include "character.h"
 
 class CharacterData : public QObject
 {
@@ -14,11 +15,9 @@ public:
     explicit CharacterData(QObject *parent = nullptr);
     friend QTextStream& operator>>(QTextStream& f, CharacterData& rhs);
 
-private:
-    int cardId;
-    int agile;
-    CharacterSkill up;
-    CharacterSkill down;
+protected:
+    int characterAmount;
+    std::vector<Character> characters;
 
 signals:
 

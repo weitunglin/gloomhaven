@@ -7,9 +7,9 @@
 #include <QString>
 #include <vector>
 
-#include "characterdata.h"
+#include "characterskill.h"
 
-class Character : public CharacterData
+class Character
 {
 public:
     Character();
@@ -20,7 +20,7 @@ private:
     int maxHp;
     int startHandCardAmount;
     int handCardAmount;
-    std::vector<CharacterData> cards;
+    std::vector<CharacterSkill> cards;
 
 signals:
 
