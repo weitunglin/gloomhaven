@@ -54,3 +54,14 @@ void Gloomhaven::preGameInput() {
     }
     delete inputDialog;
 }
+
+void Gloomhaven::loop() {
+    // foreach character select cards or sleep
+    // monsters random a card each
+    // sort the agile value (both characters and monsters)
+    // do the actions by sort result
+    // (actions) => character: a card's up and another's down
+    // (actions) => monster: a skill
+    // 結算 (check the dead condition, see if door's open, ... so on)
+//    map->characters[0].attack(5, 3, map->monster);
+}

@@ -33,6 +33,8 @@ public:
     std::vector<Point2d> startPos;
     bool inBound(const Point2d& p);
     bool visible(const Point2d& p);
+//    std::vector<Character> characters;
+//    std::vector<Monster> monsters;
 
 signals:
 

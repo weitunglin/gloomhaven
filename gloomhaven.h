@@ -23,6 +23,7 @@ public:
     Gloomhaven(QWidget *parent = nullptr, QString cFilename = "character1.txt", QString mFilename = "monster1.txt", int mode = 0);
     void preGameInput();
     Map *map;
+    void loop();
 
 protected:
     QString characterFilename;
