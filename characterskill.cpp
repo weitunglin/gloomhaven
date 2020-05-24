@@ -5,6 +5,9 @@ CharacterSkill::CharacterSkill(QObject *parent) : QObject(parent)
 
 }
 
+CharacterSkill::CharacterSkill(const CharacterSkill& rhs) : QObject(nullptr), cardId(rhs.cardId), agile(rhs.agile), up(rhs.up), down(rhs.down) {
+}
+
 void CharacterSkill::setUp(QString s) {
 //    QTextStream ss(&s);
 //    std::cout << "string:" << s.toStdString() << std::endl;
@@ -29,4 +32,8 @@ QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs) {
     rhs.down.setUp(down);
     //  std::cout << down.toStdString() << std::endl;
     return f;
+}
+
+int CharacterSkill::getCardId() const {
+    return cardId;
 }

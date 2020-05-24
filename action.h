@@ -12,6 +12,7 @@ class Action : public QObject
     Q_OBJECT
 public:
     explicit Action(QObject *parent = nullptr);
+    Action(const Action& rhs);
     void setUp(QString s);
 //    friend QTextStream& operator>>(QTextStream& f, Action&);
 

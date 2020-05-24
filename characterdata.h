@@ -17,7 +17,7 @@ public:
 
 protected:
     int characterAmount;
-    std::vector<Character> characters;
+    std::vector<Character> charactersAll;
 
 signals:
 

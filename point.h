@@ -8,6 +8,7 @@ class Point2d : public QObject
     Q_OBJECT
 public:
     explicit Point2d(QObject *parent = nullptr);
+    Point2d();
     Point2d(QObject *parent = nullptr, int r = 0, int c = 0);
     Point2d(const Point2d& rhs);
     ~Point2d();
@@ -16,6 +17,7 @@ public:
     void setX(int c);
     int getY() const;
     int getX() const;
+    Point2d& operator=(Point2d rhs);
 
 private:
     int y;

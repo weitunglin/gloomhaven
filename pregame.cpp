@@ -47,6 +47,7 @@ void PreGame::on_playButton_clicked()
         mainwindow->game = new Gloomhaven(nullptr, ui->textCharacterData->text(), ui->textMonsterData->text());
         mainwindow->showMap();
         mainwindow->show();
+        mainwindow->start();
         this->hide();
     }
 }

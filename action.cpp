@@ -5,6 +5,10 @@ Action::Action(QObject *parent) : QObject(parent)
 
 }
 
+Action::Action(const Action& rhs) : QObject(nullptr), skills(rhs.skills) {
+
+}
+
 void Action::setUp(QString s) {
     QTextStream ss(&s);
 //    std::cout << "string:" << s.toStdString() << std::endl;

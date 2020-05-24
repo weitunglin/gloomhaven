@@ -14,9 +14,11 @@ class CharacterSkill : public QObject
 {
     Q_OBJECT
 public:
+    CharacterSkill(const CharacterSkill& rhs);
     explicit CharacterSkill(QObject *parent = nullptr);
     friend QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs);
     void setUp(QString s);
+    int getCardId() const;
 
 private:
     int cardId;

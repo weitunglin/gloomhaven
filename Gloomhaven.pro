@@ -24,6 +24,9 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
+    monster.cpp \
+    monsterdata.cpp \
+    monsterskill.cpp \
     point.cpp \
     pregame.cpp
 
@@ -35,6 +38,9 @@ HEADERS += \
     gloomhaven.h \
     mainwindow.h \
     map.h \
+    monster.h \
+    monsterdata.h \
+    monsterskill.h \
     point.h \
     pregame.h
 

@@ -9,6 +9,8 @@
 #include <list>
 
 #include "point.h"
+#include "character.h"
+#include "monster.h"
 
 class Map : public QObject
 {
@@ -33,8 +35,11 @@ public:
     std::vector<Point2d> startPos;
     bool inBound(const Point2d& p);
     bool visible(const Point2d& p);
-//    std::vector<Character> characters;
-//    std::vector<Monster> monsters;
+    int characterAmountOnCourt;
+    std::vector<Character> characters;
+    std::vector<Monster> monsters;
+    void startPosSelectable();
+    int t = 0;
 
 signals:
 

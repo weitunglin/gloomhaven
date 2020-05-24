@@ -2,7 +2,6 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
-
 }
 
 Map::~Map() {
@@ -10,6 +9,7 @@ Map::~Map() {
 }
 
 QTextStream& operator>>(QTextStream& f, Map& rhs) {
+    /* get the map info */
     std::cout << "---Map---" << std::endl;
     f >> rhs.row >> rhs.col;
     std::cout << "Col:" << rhs.col << ", Row:" << rhs.row << std::endl;
@@ -35,9 +35,9 @@ Map::MapData Map::get(int r, int c) {
     return data[r][c];
 }
 
-bool Map::visible(const Point2d& p) {
+//bool Map::visible(const Point2d& p) {
 
-}
+//}
 
 bool Map::inBound(const Point2d &p) {
     if (p.getX() >= 0 && p.getX() < col && p.getY() >= 0 && p.getY() < row) return true;
