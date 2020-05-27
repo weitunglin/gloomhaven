@@ -8,11 +8,10 @@
 
 #include "character.h"
 
-class CharacterData : public QObject
+class CharacterData
 {
-    Q_OBJECT
 public:
-    explicit CharacterData(QObject *parent = nullptr);
+    CharacterData();
     friend QTextStream& operator>>(QTextStream& f, CharacterData& rhs);
 
 protected:

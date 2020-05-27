@@ -22,7 +22,6 @@ SOURCES += \
     characterskill.cpp \
     gloomhaven.cpp \
     main.cpp \
-    mainwindow.cpp \
     map.cpp \
     monster.cpp \
     monsterdata.cpp \
@@ -36,7 +35,6 @@ HEADERS += \
     characterdata.h \
     characterskill.h \
     gloomhaven.h \
-    mainwindow.h \
     map.h \
     monster.h \
     monsterdata.h \
@@ -45,6 +43,7 @@ HEADERS += \
     pregame.h
 
 FORMS += \
+    gloomhaven.ui \
     mainwindow.ui \
     pregame.ui
 
@@ -54,4 +53,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    image.qrc
+    source.qrc

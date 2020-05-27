@@ -1,19 +1,14 @@
 #include "point.h"
 
-Point2d::Point2d(QObject *parent) : QObject(parent) {
+Point2d::Point2d() : y(-1), x(-1) {
 
 }
 
-Point2d::Point2d() : QObject(nullptr), y(0), x(0) {
+Point2d::Point2d(int r, int c) : y(r), x(c) {
 
 }
 
-Point2d::Point2d(QObject *parent, int r, int c) : QObject(parent) {
-    y = r;
-    x = c;
-}
-
-Point2d::Point2d(const Point2d& rhs) : Point2d(nullptr, rhs.y, rhs.x) {
+Point2d::Point2d(const Point2d& rhs) : Point2d(rhs.y, rhs.x) {
 
 }
 
@@ -25,6 +20,14 @@ Point2d& Point2d::operator=(Point2d rhs) {
     std::swap(y, rhs.y);
     std::swap(x, rhs.x);
     return *this;
+}
+
+bool operator!=(const Point2d& u, const Point2d& v) {
+    return !(u.x == v.x && u.y == v.y);
+}
+
+bool operator==(const Point2d& u, const Point2d& v) {
+    return (u.x == v.x && u.y == v.y);
 }
 
 void Point2d::set(int r, int c) {

@@ -5,7 +5,7 @@ MonsterSkill::MonsterSkill(QObject *parent) : QObject(parent)
 
 }
 
-MonsterSkill::MonsterSkill(const MonsterSkill& rhs) : QObject(nullptr), cardId(rhs.cardId), agile(rhs.agile), reDeal(rhs.reDeal), move(rhs.move), attack(rhs.attack), range(rhs.range), heal(rhs.heal), shield(rhs.shield) {
+MonsterSkill::MonsterSkill(const MonsterSkill& rhs) : cardId(rhs.cardId), agile(rhs.agile), reDeal(rhs.reDeal), move(rhs.move), attack(rhs.attack), range(rhs.range), heal(rhs.heal), shield(rhs.shield) {
 }
 
 QTextStream& operator>>(QTextStream& f, MonsterSkill& rhs) {

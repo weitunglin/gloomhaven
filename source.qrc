@@ -1,8 +1,8 @@
 <RCC>
     <qresource prefix="/images">
-        <file>map_door.jpeg</file>
+        <file>map_door.jpg</file>
         <file>map_floor_with_start.jpg</file>
-        <file>map_floor</file>
+        <file>map_floor.jpg</file>
     </qresource>
     <qresource prefix="/files">
         <file>character1.txt</file>

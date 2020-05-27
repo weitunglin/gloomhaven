@@ -5,7 +5,7 @@ CharacterSkill::CharacterSkill(QObject *parent) : QObject(parent)
 
 }
 
-CharacterSkill::CharacterSkill(const CharacterSkill& rhs) : QObject(nullptr), cardId(rhs.cardId), agile(rhs.agile), up(rhs.up), down(rhs.down) {
+CharacterSkill::CharacterSkill(const CharacterSkill& rhs) : cardId(rhs.cardId), agile(rhs.agile), up(rhs.up), down(rhs.down) {
 }
 
 void CharacterSkill::setUp(QString s) {

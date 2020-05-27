@@ -5,7 +5,6 @@
 #include <QMessageBox>
 
 #include "gloomhaven.h"
-#include "mainwindow.h"
 
 namespace Ui {
 class PreGame;
@@ -26,7 +25,6 @@ private slots:
 
 private:
     Ui::PreGame *ui;
-    MainWindow *mainwindow;
     Gloomhaven* game;
 };
 

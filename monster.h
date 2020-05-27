@@ -39,7 +39,7 @@ private:
     MonsterStatus threeCharacters;
     MonsterStatus fourCharacters;
     std::vector<MonsterSkill> cards;
-    Point2d* pos;
+    Point2d pos;
 
 signals:
 

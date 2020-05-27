@@ -1,6 +1,6 @@
 #include "characterdata.h"
 
-CharacterData::CharacterData(QObject *parent) : QObject(parent)
+CharacterData::CharacterData()
 {
 
 }

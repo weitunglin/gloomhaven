@@ -6,11 +6,10 @@
 
 #include "monster.h"
 
-class MonsterData : public QObject
+class MonsterData
 {
-    Q_OBJECT
 public:
-    explicit MonsterData(QObject *parent = nullptr);
+    MonsterData();
 
 protected:
     int monsterAmount;

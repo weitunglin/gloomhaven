@@ -1,4 +1,3 @@
-#include "mainwindow.h"
 #include "pregame.h"
 
 #include <QApplication>

@@ -3,13 +3,11 @@
 
 #include <QObject>
 
-class Point2d : public QObject
+class Point2d
 {
-    Q_OBJECT
 public:
-    explicit Point2d(QObject *parent = nullptr);
     Point2d();
-    Point2d(QObject *parent = nullptr, int r = 0, int c = 0);
+    Point2d(int r = -1, int c = -1);
     Point2d(const Point2d& rhs);
     ~Point2d();
     void set(int r, int c);
@@ -18,6 +16,8 @@ public:
     int getY() const;
     int getX() const;
     Point2d& operator=(Point2d rhs);
+    friend bool operator==(const Point2d& u, const Point2d& v);
+    friend bool operator!=(const Point2d& u, const Point2d& v);
 
 private:
     int y;

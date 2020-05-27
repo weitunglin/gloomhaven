@@ -6,13 +6,12 @@ PreGame::PreGame(QWidget *parent) :
     ui(new Ui::PreGame)
 {
     ui->setupUi(this);
-    mainwindow = new MainWindow();
+    game = new Gloomhaven(nullptr);
 }
 
 PreGame::~PreGame()
 {
     delete ui;
-    delete mainwindow;
     delete game;
 }
 
@@ -32,9 +31,10 @@ void PreGame::on_playButton_clicked()
             ui->textCharacterData->setText("character1.txt");
             ui->textMonsterData->setText("monster1.txt");
             std::cout << "ok, start game" << std::endl;
-            mainwindow->game = new Gloomhaven(nullptr, ui->textCharacterData->text(), ui->textMonsterData->text());
-            mainwindow->showMap();
-            mainwindow->show();
+            game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text());
+            game->showMap();
+            game->show();
+            game->start();
             this->hide();
             break;
         case QMessageBox::No:
@@ -44,10 +44,10 @@ void PreGame::on_playButton_clicked()
         ui->textCharacterData->setText("character1.txt");
         ui->textMonsterData->setText("monster1.txt");
         std::cout << "ok, start game" << std::endl;
-        mainwindow->game = new Gloomhaven(nullptr, ui->textCharacterData->text(), ui->textMonsterData->text());
-        mainwindow->showMap();
-        mainwindow->show();
-        mainwindow->start();
+        game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text());
+        game->showMap();
+        game->show();
+        game->start();
         this->hide();
     }
 }

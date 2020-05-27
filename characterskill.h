@@ -21,6 +21,7 @@ public:
     int getCardId() const;
 
 private:
+    bool available;
     int cardId;
     int agile;
     Action up;

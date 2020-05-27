@@ -12,9 +12,8 @@
 #include "character.h"
 #include "monster.h"
 
-class Map : public QObject
+class Map
 {
-    Q_OBJECT
 public:
     enum class MapData {
         wall = 0,
@@ -23,12 +22,18 @@ public:
         door = 3,
         opened_door = 4
     };
-    explicit Map(QObject *parent = nullptr);
+    explicit Map();
     ~Map();
     friend QTextStream& operator>>(QTextStream& f, Map& rhs);
+    int getRow() const;
+    int getCol() const;
+    Point2d getPos() const;
+
+protected:
     MapData get(int r, int c);
+    void readMap(QTextStream& f);
     QString mapFilename;
-    Point2d *pos;
+    Point2d pos;
     int row;
     int col;
     std::vector<std::vector<MapData>> data;

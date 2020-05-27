@@ -1,10 +1,10 @@
 #include "monster.h"
 
-Monster::Monster(QObject *parent) : QObject(parent)
+Monster::Monster(QObject *parent) : QObject(parent), pos(-1, -1)
 {
 }
 
-Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), normal(rhs.normal), elite(rhs.elite) {
+Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), normal(rhs.normal), elite(rhs.elite), pos(-1, -1) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(MonsterSkill(rhs.cards[i]));
     }
@@ -26,7 +26,7 @@ QString Monster::getName() const {
 }
 
 void Monster::setUp(Point2d p, int two, int three, int four) {
-    pos = new Point2d(p);
+    pos = Point2d(p);
     switch(two) {
     case 0:
         twoCharacters = MonsterStatus::noshow;
