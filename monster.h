@@ -29,16 +29,21 @@ public:
     Monster(const Monster& rhs);
     friend QTextStream& operator>>(QTextStream& f, Monster& rhs);
     QString getName() const;
-    void setUp(Point2d p, int two, int three, int four);
+    void setUp(int r, int c, int two, int three, int four);
+    void setType(int t);
+    int getType() const;
+    Point2d getPos() const;
 
 private:
     QString monsterName;
     MonsterInfo normal;
     MonsterInfo elite;
-    MonsterStatus twoCharacters;
-    MonsterStatus threeCharacters;
-    MonsterStatus fourCharacters;
+    int twoCharacters;
+    int threeCharacters;
+    int fourCharacters;
     std::vector<MonsterSkill> cards;
+    int type;
+    std::vector<MonsterInfo> info;
     Point2d pos;
 
 signals:

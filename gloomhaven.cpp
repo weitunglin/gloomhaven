@@ -106,6 +106,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
                 item->setFlag(QGraphicsItem::ItemIsSelectable, true);
             }
         }
+        // check if there is a character
         for (size_t i = 0; i < characters.size(); ++i) {
             if (characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
                 qDebug() << "found character" << endl;
@@ -114,6 +115,21 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
                 painter->setPen(Qt::blue);
                 painter->setFont(QFont("Arial", 30));
                 painter->drawText(QRect(0, 0, itemWidth-2, itemHeight-2), Qt::AlignCenter, QString((int)i + 'A'));
+                painter->end();
+                delete painter;
+                item->setPixmap(p);
+            }
+        }
+        // check if there is a monster
+        for (size_t i = 0; i < monsters.size(); ++i) {
+//            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
+            if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
+                qDebug() << "found monster" << endl;
+                QPixmap p = item->pixmap();
+                QPainter *painter = new QPainter(&p);
+                painter->setPen(Qt::green);
+                painter->setFont(QFont("Arial", 30));
+                painter->drawText(QRect(0, 0, itemWidth-2, itemHeight-2), Qt::AlignCenter, QString((int)i + 'a'));
                 painter->end();
                 delete painter;
                 item->setPixmap(p);
@@ -237,12 +253,13 @@ void Gloomhaven::preGameInput() {
             QString mname;
             qint32 r, c, two, three, four;
             f >> mname >> c >> r >> two >> three >> four;
-            Monster m = Monster(*find_if(monstersAll.begin(), monstersAll.end(), [mname](const Monster& u) {
+            Monster m(*find_if(monstersAll.begin(), monstersAll.end(), [mname](const Monster& u) {
                 return u.getName() == mname;
             }));
-            m.setUp(Point2d(r, c), two, three, four);
+            m.setUp(r, c, two, three, four);
+            m.setType(characterAmountOnCourt);
             monsters.push_back(m);
-            qDebug() << r << "," << c << "->" << mname << endl;
+            qDebug() << monsters.back().getPos().getY() << "," << monsters.back().getPos().getX() << "->" << mname << ":" << monsters.back().getType() << endl;
         }
     }
     file.close();
@@ -266,8 +283,21 @@ void Gloomhaven::step1() {
 void Gloomhaven::step2() {
     ui->labelInstruction->setText("monster randomed a action card");
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster random action card\n");
-    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster random action card\n");
-    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster random action card\n");
+    int cnt = 0;
+    struct Node {
+        int value = -1;
+    };
+    std::map<QString, Node> seen;
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> r(0, 5);
+    qDebug() << "random";
+    for (size_t i = 0; i < monsters.size(); ++i) {
+        if (seen[monsters[i].getName()].value == -1) {
+            ++cnt;
+            seen[monsters[i].getName()].value = r(generator);
+            qDebug() << monsters[i].getName() << seen[monsters[i].getName()].value;
+        }
+    }
 }
 
 void Gloomhaven::selectAction(int i) {

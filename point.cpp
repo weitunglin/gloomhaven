@@ -30,6 +30,11 @@ bool operator==(const Point2d& u, const Point2d& v) {
     return (u.x == v.x && u.y == v.y);
 }
 
+QDebug operator<<(QDebug d, const Point2d& rhs) {
+    d << "Y: " << rhs.y << ", X: " << rhs.x << endl;
+    return d;
+}
+
 void Point2d::set(int r, int c) {
     y = r;
     x = c;

@@ -2,6 +2,7 @@
 #define POINT2D_H
 
 #include <QObject>
+#include <QDebug>
 
 class Point2d
 {
@@ -18,6 +19,7 @@ public:
     Point2d& operator=(Point2d rhs);
     friend bool operator==(const Point2d& u, const Point2d& v);
     friend bool operator!=(const Point2d& u, const Point2d& v);
+    friend QDebug operator<<(QDebug d, const Point2d& rhs);
 
 private:
     int y;

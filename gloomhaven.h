@@ -20,6 +20,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 #include "character.h"
 #include "characterdata.h"
