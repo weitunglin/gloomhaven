@@ -7,6 +7,7 @@ Gloomhaven::Gloomhaven(QWidget *parent) :
     ui->confirmButton->hide();
     ui->listWidget->hide();
     ui->labelBattleInfo->hide();
+    round = 0;
 }
 
 Gloomhaven::~Gloomhaven() {
@@ -125,6 +126,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
 //            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
             if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
                 qDebug() << "found monster" << endl;
+                monsters[i].setOnCourt(true);
                 QPixmap p = item->pixmap();
                 QPainter *painter = new QPainter(&p);
                 painter->setPen(Qt::green);
@@ -235,7 +237,7 @@ void Gloomhaven::preGameInput() {
     /* get the input of the map data */
     do {
         mapData = inputDialog->getText(this, "請輸入地圖資料", "地圖資料：", QLineEdit::Normal, "map1.txt", &ok, inputDialog->windowFlags());
-    } while (!ok);
+    } while (!ok || mapData.isEmpty());
     if (!mapData.isEmpty()) {
         qDebug() << mapData << endl;
         mapFilename = mapData;
@@ -265,7 +267,7 @@ void Gloomhaven::preGameInput() {
     file.close();
 }
 
-void Gloomhaven::step1() {
+void Gloomhaven::characterPrepare() {
     // step1: foreach character select cards or sleep
     // step2: monsters random a card each
     // step3: sort the agile value (both characters and monsters)
@@ -280,22 +282,98 @@ void Gloomhaven::step1() {
     selectAction(t2);
 }
 
-void Gloomhaven::step2() {
+void Gloomhaven::monsterPrepare() {
     ui->labelInstruction->setText("monster randomed a action card");
-    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster random action card\n");
+//    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster random action card\n");
     int cnt = 0;
     struct Node {
         int value = -1;
     };
     std::map<QString, Node> seen;
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> r(0, 5);
+    std::random_device rd;
+    std::default_random_engine gen = std::default_random_engine(rd());
+    std::uniform_int_distribution<int> dis(0, 5);
     qDebug() << "random";
     for (size_t i = 0; i < monsters.size(); ++i) {
         if (seen[monsters[i].getName()].value == -1) {
             ++cnt;
-            seen[monsters[i].getName()].value = r(generator);
+            seen[monsters[i].getName()].value = dis(gen);
             qDebug() << monsters[i].getName() << seen[monsters[i].getName()].value;
+        }
+        if (monsters[i].getOnCourt()) {
+            monsters[i].setSelected(seen[monsters[i].getName()].value);
+            ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster " + QString((int)i + 'a') + " picked no." + QString::number(seen[monsters[i].getName()].value) + " card\n");
+        }
+    }
+    sortByAgile();
+}
+
+void Gloomhaven::sortByAgile() {
+    ui->labelInstruction->setText("sort actions by agile");
+    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "round: " + QString::number(++round) + "\n");
+    // sort
+    std::vector<std::pair<char, int>> list;
+    for (size_t i = 0; i < characters.size(); ++i) {
+        if (characters[i].getStatus()) {
+            list.push_back({i+'A', characters[i].getActionAgile()});
+        }
+    }
+    for (size_t i = 0; i < monsters.size(); ++i) {
+        if (monsters[i].getOnCourt()) {
+            list.push_back({i+'a', monsters[i].getSelected().getAgile()});
+        }
+    }
+    std::sort(list.begin(), list.end(), [](const std::pair<char, int>& u, const std::pair<char, int>& v) {
+        return u.second < v.second;
+    });
+    for (size_t i = 0; i < list.size(); ++i) {
+        for (size_t j = 0; j < list.size() && i != j; ++j) {
+            if (list[i].second == list[j].second) {
+                if (isCharacter(list[i].first) && isCharacter(list[j].first)) {
+                    if (characters[list[i].first - 'A'].getSelected()[1] < characters[list[j].first - 'A'].getSelected()[1]) {
+                        std::swap(list[i], list[j]);
+                    } else if (characters[list[i].first - 'A'].getSelected()[1] == characters[list[j].first - 'A'].getSelected()[1]) {
+                        if (list[i].first < list[j].first) {
+                            std::swap(list[i], list[j]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    QString s;
+    for (const auto& i: list) {
+        s += QString(i.first) + " " + QString::number(i.second);
+        if (i.first >= 'A' && i.first <= 'Z') {
+            for (const auto& j: characters[i.first - 'A'].getSelected()) {
+                s += " " + QString::number(j);
+            }
+        } else if (i.first >= 'a' && i.first <= 'z') {
+            s += " " + monsters[i.first - 'a'].getSelected().getInfo();
+        }
+        s += "\n";
+    }
+    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + s);
+    QInputDialog *inputDialog = new QInputDialog(this);
+    inputDialog->adjustSize();
+    for (const auto& i: list) {
+        if (i.first >= 'A' && i.first <= 'Z') {
+            QStringList options;
+            bool ok;
+            QString result;
+            // 0: 0u + 1d, 1: 0d + 1u, 2: 1u + 0d, 3: 1d + 0u
+            options.push_back(QString(characters[i.first-'A'].getSelectedUp(0).toString() + " + " + characters[i.first-'A'].getSelectedDown(1).toString()));
+            options.push_back(QString(characters[i.first-'A'].getSelectedDown(0).toString() + " + " + characters[i.first-'A'].getSelectedUp(1).toString()));
+            options.push_back(QString(characters[i.first-'A'].getSelectedUp(1).toString() + " + " + characters[i.first-'A'].getSelectedDown(0).toString()));
+            options.push_back(QString(characters[i.first-'A'].getSelectedDown(1).toString() + " + " + characters[i.first-'A'].getSelectedUp(0).toString()));
+            do {
+                result = inputDialog->getItem(this, "Select Character " + QString(i.first) + " Action Detail", "Combations: ", options, 0, false, &ok, inputDialog->windowFlags());
+            } while (!ok);
+            int idx = options.indexOf(result);
+            qDebug() << result << idx;
+//            for (const auto& j: characters[i.first-'A'].)
+        } else if (i.first >= 'a' && i.first <= 'z') {
+            qDebug() << monsters[i.first - 'a'].getSelected().getInfo();
         }
     }
 }
@@ -307,17 +385,23 @@ void Gloomhaven::selectAction(int i) {
     QList<QListWidgetItem*> itemsDisabled;
     QListWidgetItem* rest = new QListWidgetItem("長休");
     if (!characters[i].restable()) {
+        QFont font;
+        font.setStrikeOut(true);
+        rest->setFont(font);
         rest->setFlags(rest->flags() & ~Qt::ItemFlag::ItemIsSelectable);
     }
     ui->listWidget->insertItem(0, rest);
     for (const auto& card: characters[i].inHands) {
         if (card.second == true) {
             qDebug() << "+" << card.first;
-            QListWidgetItem *i = new QListWidgetItem(QString(card.first + '0'));
+            QListWidgetItem *i = new QListWidgetItem(QString::number(card.first));
             items.push_back(i);
         } else {
             qDebug() << "-" << card.first;
-            QListWidgetItem *i = new QListWidgetItem(QString(card.first + '0'));
+            QListWidgetItem *i = new QListWidgetItem(QString::number(card.first));
+            QFont font;
+            font.setStrikeOut(true);
+            i->setFont(font);
             i->setFlags(i->flags() & ~Qt::ItemFlag::ItemIsSelectable);
             itemsDisabled.push_back(i);
         }
@@ -328,7 +412,7 @@ void Gloomhaven::selectAction(int i) {
     for (int i = 0; i < itemsDisabled.size(); ++i) {
         ui->listWidget->insertItem(items.size() + 1 + i, itemsDisabled[i]);
     }
-    ui->listWidget->setStyleSheet("QListWidget { background-color: black; color: blue; }");
+    ui->listWidget->setStyleSheet("QListWidget { background-color: black; color: gray; }");
     ui->listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->listWidget->show();
     ui->listWidget->activateWindow();
@@ -351,7 +435,7 @@ void Gloomhaven::selectedChange() {
             disconnect(ui->graphicsView->scene(), SIGNAL(selectionChanged()), this, SLOT(selectedChange()));
             ui->graphicsView->scene()->clearSelection();
             showMap();
-            step1();
+            characterPrepare();
         }
     }
 }
@@ -382,11 +466,16 @@ void Gloomhaven::on_confirmButton_released()
     }
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "Character " + QString(t2 + 'A') + " selected " + s + "\n");
     characters[t2].setSelected(s);
+    characters[t2].setStatus(list.size() == 1 ? 0 : 1);
     if (++t2 < (int)characters.size()) {
         selectAction(t2);
     } else {
         ui->confirmButton->hide();
         ui->listWidget->hide();
-        step2();
+        monsterPrepare();
     }
+}
+
+int Gloomhaven::isCharacter(char c) const {
+    return (c >= 'A' && c <= 'Z');
 }

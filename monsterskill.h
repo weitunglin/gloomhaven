@@ -4,19 +4,22 @@
 #include <QObject>
 #include <QString>
 #include <QTextStream>
+#include <QDebug>
 #include <vector>
 #include <iostream>
 
-class MonsterSkill : public QObject
+class MonsterSkill
 {
-    Q_OBJECT
 public:
-    explicit MonsterSkill(QObject *parent = nullptr);
+    MonsterSkill();
     MonsterSkill(const MonsterSkill& rhs);
     friend QTextStream& operator>>(QTextStream& f, MonsterSkill& rhs);
+    int getAgile() const;
+    QString getInfo() const;
 
 private:
     QString mname;
+    QString info;
     int cardId;
     int agile;
     bool reDeal;

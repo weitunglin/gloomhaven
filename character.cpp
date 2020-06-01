@@ -70,10 +70,46 @@ void Character::setSelected(QString s) {
     }
 }
 
+std::vector<int> Character::getSelected() const {
+    return selected;
+}
+
 bool Character::restable() const {
     int cnt = 0;
     for (const auto& i: inHands) {
         if (i.second == false) ++cnt;
     }
     return cnt >= 2;
+}
+
+void Character::setStatus(int i) {
+    status = i;
+}
+
+int Character::getStatus() const {
+    return status;
+}
+
+int Character::getActionAgile() const {
+    if (selected.size()) {
+        return cards[selected[0]].getAgile();
+    } else {
+        return 99;
+    }
+}
+
+Action Character::getSelectedUp(int i) const {
+    return cards[selected[i]].getUp();
+}
+
+Action Character::getSelectedDown(int i) const {
+    return cards[selected[i]].getDown();
+}
+
+Action Character::getSelected(int i, int j) const {
+    if (i == 0) {
+        return cards[selected[j]].getUp();
+    } else if (i == 1) {
+        return cards[selected[j]].getDown();
+    }
 }

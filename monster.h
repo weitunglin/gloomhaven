@@ -33,6 +33,10 @@ public:
     void setType(int t);
     int getType() const;
     Point2d getPos() const;
+    void setSelected(int i);
+    MonsterSkill getSelected() const;
+    void setOnCourt(bool b);
+    bool getOnCourt() const;
 
 private:
     QString monsterName;
@@ -42,9 +46,11 @@ private:
     int threeCharacters;
     int fourCharacters;
     std::vector<MonsterSkill> cards;
+    MonsterSkill selected;
     int type;
     std::vector<MonsterInfo> info;
     Point2d pos;
+    bool onCourt;
 
 signals:
 

@@ -1,15 +1,16 @@
 #include "action.h"
 
-Action::Action(QObject *parent) : QObject(parent)
+Action::Action()
 {
 
 }
 
-Action::Action(const Action& rhs) : QObject(nullptr), skills(rhs.skills) {
+Action::Action(const Action& rhs) : skills(rhs.skills), detail(rhs.detail) {
 
 }
 
 void Action::setUp(QString s) {
+    detail = s.trimmed();
     QTextStream ss(&s);
 //    std::cout << "string:" << s.toStdString() << std::endl;
     QString key;
@@ -17,7 +18,7 @@ void Action::setUp(QString s) {
     do {
         ss >> key >> value;
         if (key == "" && value == 0) break;
-        std::cout << "key:" << key.toStdString() << ",value:" << value << std::endl;
+        qDebug() << "key:" << key << ",value:" << value;
         skills.push_back({key, value});
     } while (!ss.atEnd());
 }
@@ -25,3 +26,11 @@ void Action::setUp(QString s) {
 //QTextStream& operator>>(QTextStream& f, Action& rhs) {
 
 //}
+
+QString Action::toString() const {
+    return detail;
+}
+
+std::vector<std::pair<QString, int>> Action::getSkills() const {
+    return skills;
+}

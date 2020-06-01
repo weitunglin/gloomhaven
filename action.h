@@ -4,20 +4,23 @@
 #include <QObject>
 #include <QTextStream>
 #include <QString>
+#include <QDebug>
 #include <iostream>
 #include <vector>
 
-class Action : public QObject
+class Action
 {
-    Q_OBJECT
 public:
-    explicit Action(QObject *parent = nullptr);
+    Action();
     Action(const Action& rhs);
     void setUp(QString s);
 //    friend QTextStream& operator>>(QTextStream& f, Action&);
+    QString toString() const;
+    std::vector<std::pair<QString, int>> getSkills() const;
 
 private:
     std::vector<std::pair<QString, int>> skills;
+    QString detail;
 
 signals:
 

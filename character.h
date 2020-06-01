@@ -25,12 +25,19 @@ public:
     Character& operator=(Character rhs);
     QString getName() const;
     void setUp(const std::vector<int>& start);
-    Point2d getPos() const;
     void setPos(Point2d pos);
+    Point2d getPos() const;
     void prepare();
     void setSelected(QString s);
+    std::vector<int> getSelected() const;
+    int getActionAgile() const;
     bool restable() const;
+    void setStatus(int i);
+    int getStatus() const;
     std::map<int, bool> inHands;
+    Action getSelectedUp(int i) const;
+    Action getSelectedDown(int i) const;
+    Action getSelected(int i, int j) const;
 
 private:
     QString characterName;
@@ -39,7 +46,7 @@ private:
     int startHandCardAmount;
     int handCardAmount;
     std::vector<CharacterSkill> cards;
-    int status; // 0: action, 1: sleep
+    int status; // 0: sleep, 1: action
 //    std::vector<std::pair<CharacterSkill, int /*0: up, 1: down*/>> selected;
     std::vector<int> selected;
     Point2d pos;

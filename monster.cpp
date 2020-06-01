@@ -4,7 +4,7 @@ Monster::Monster(QObject *parent) : QObject(parent), pos(-1, -1)
 {
 }
 
-Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), twoCharacters(rhs.twoCharacters), threeCharacters(rhs.threeCharacters), fourCharacters(rhs.fourCharacters), type(rhs.type), pos(rhs.pos) {
+Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), twoCharacters(rhs.twoCharacters), threeCharacters(rhs.threeCharacters), fourCharacters(rhs.fourCharacters), type(rhs.type), pos(rhs.pos), onCourt(false) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(MonsterSkill(rhs.cards[i]));
     }
@@ -91,4 +91,20 @@ int Monster::getType() const {
 
 Point2d Monster::getPos() const {
     return pos;
+}
+
+void Monster::setSelected(int i) {
+    selected = cards[i];
+}
+
+MonsterSkill Monster::getSelected() const {
+    return selected;
+}
+
+void Monster::setOnCourt(bool b) {
+    onCourt = b;
+}
+
+bool Monster::getOnCourt() const {
+    return  onCourt;
 }

@@ -10,15 +10,17 @@
 
 #include "action.h"
 
-class CharacterSkill : public QObject
+class CharacterSkill
 {
-    Q_OBJECT
 public:
+    CharacterSkill();
     CharacterSkill(const CharacterSkill& rhs);
-    explicit CharacterSkill(QObject *parent = nullptr);
     friend QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs);
     void setUp(QString s);
     int getCardId() const;
+    int getAgile() const;
+    Action getUp() const;
+    Action getDown() const;
 
 private:
     bool available;

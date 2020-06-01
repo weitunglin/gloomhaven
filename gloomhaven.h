@@ -54,8 +54,9 @@ public:
     void start();
     void setFileData(QString cFilename = "character1.txt", QString mFilename = "monster1.txt", int mode = 0);
     void selectAction(int i);
-    void step1();
-    void step2();
+    void characterPrepare();
+    void monsterPrepare();
+    void sortByAgile();
 
 protected:
     Ui::Gloomhaven *ui;
@@ -68,6 +69,8 @@ protected:
     int debugMode;
     int monsterAmount;
     int t2;
+    int round;
+    int isCharacter(char c) const;
 
 public slots:
     void selectedChange();

@@ -1,6 +1,6 @@
 #include "characterskill.h"
 
-CharacterSkill::CharacterSkill(QObject *parent) : QObject(parent)
+CharacterSkill::CharacterSkill()
 {
 
 }
@@ -36,4 +36,16 @@ QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs) {
 
 int CharacterSkill::getCardId() const {
     return cardId;
+}
+
+int CharacterSkill::getAgile() const {
+    return agile;
+}
+
+Action CharacterSkill::getUp() const {
+    return up;
+}
+
+Action CharacterSkill::getDown() const {
+    return down;
 }
