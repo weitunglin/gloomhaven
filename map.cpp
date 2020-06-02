@@ -52,8 +52,12 @@ void Map::readMap(QTextStream& f) {
     pos = Point2d(*(startPos.begin()));
 }
 
-Map::MapData Map::get(int r, int c) {
+Map::MapData Map::get(int r, int c) const {
     return data[r][c];
+}
+
+Map::MapData Map::get(Point2d pos) const {
+    return data[pos.getY()][pos.getX()];
 }
 
 int Map::getCol() const {
@@ -75,4 +79,24 @@ Point2d Map::getPos() const {
 bool Map::inBound(const Point2d &p) {
     if (p.getX() >= 0 && p.getX() < col && p.getY() >= 0 && p.getY() < row) return true;
     else return false;
+}
+
+bool Map::validMove(Point2d p, const QString &s) const {
+    int x = p.getX(), y = p.getY();
+    for (const auto& i: s) {
+        if (i == 'w') {
+            if (data[y-1][x] != MapData::floor) return false;
+            --y;
+        } else if (i == 's') {
+            if (data[y+1][x] != MapData::floor) return false;
+            ++y;
+        } else if (i == 'a') {
+            if (data[y][x-1] != MapData::floor) return false;
+            --x;
+        } else if (i == 'd') {
+            if (data[y][x+1] != MapData::floor) return false;
+            ++x;
+        }
+    }
+    return true;
 }

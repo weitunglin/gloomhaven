@@ -7,6 +7,7 @@ Gloomhaven::Gloomhaven(QWidget *parent) :
     ui->confirmButton->hide();
     ui->listWidget->hide();
     ui->labelBattleInfo->hide();
+    ui->labelBattleInfo->setText("");
     round = 0;
 }
 
@@ -111,6 +112,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         for (size_t i = 0; i < characters.size(); ++i) {
             if (characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
                 qDebug() << "found character" << endl;
+                Map::data[r][c] = MapData::character;
                 QPixmap p = item->pixmap();
                 QPainter *painter = new QPainter(&p);
                 painter->setPen(Qt::blue);
@@ -126,6 +128,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
 //            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
             if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
                 qDebug() << "found monster" << endl;
+                Map::data[r][c] = MapData::monster;
                 monsters[i].setOnCourt(true);
                 QPixmap p = item->pixmap();
                 QPainter *painter = new QPainter(&p);
@@ -152,6 +155,52 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         scene->addItem(item);
         qDebug() << "floor point: (" << r << "," << c << ")" << endl;
         qDebug() << "(" << c * itemWidth << "," << r * itemHeight << endl;
+    } else if (get(r, c) == Map::MapData::character) {
+        QImage image = QImage(":/images/map_floor.jpg");
+        QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
+        item->setPos(QPointF(c * itemWidth, r * itemHeight));
+        item->setData(0, QVariant{QPointF{qreal(c), qreal(r)}});
+        // check if there is a character
+        for (size_t i = 0; i < characters.size(); ++i) {
+            if (characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
+                qDebug() << "found character" << endl;
+                Map::data[r][c] = MapData::character;
+                QPixmap p = item->pixmap();
+                QPainter *painter = new QPainter(&p);
+                painter->setPen(Qt::blue);
+                painter->setFont(QFont("Arial", 30));
+                painter->drawText(QRect(0, 0, itemWidth-2, itemHeight-2), Qt::AlignCenter, QString((int)i + 'A'));
+                painter->end();
+                delete painter;
+                item->setPixmap(p);
+            }
+        }
+        scene->addItem(item);
+//        qDebug() << "floor point: (" << r << "," << c << ")" << endl;
+//        qDebug() << "(" << c * itemWidth << "," << r * itemHeight << endl;
+    } else if (get(r, c) == Map::MapData::monster) {
+        QImage image = QImage(":/images/map_floor.jpg");
+        QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
+        item->setPos(QPointF(c * itemWidth, r * itemHeight));
+        item->setData(0, QVariant{QPointF{qreal(c), qreal(r)}});
+        // check if there is a monster
+        for (size_t i = 0; i < monsters.size(); ++i) {
+//            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
+            if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
+                qDebug() << "found monster" << endl;
+                Map::data[r][c] = MapData::monster;
+                monsters[i].setOnCourt(true);
+                QPixmap p = item->pixmap();
+                QPainter *painter = new QPainter(&p);
+                painter->setPen(Qt::green);
+                painter->setFont(QFont("Arial", 30));
+                painter->drawText(QRect(0, 0, itemWidth-2, itemHeight-2), Qt::AlignCenter, QString((int)i + 'a'));
+                painter->end();
+                delete painter;
+                item->setPixmap(p);
+            }
+        }
+        scene->addItem(item);
     }
     traveled.push_back(Point2d(r, c));
 
@@ -276,7 +325,6 @@ void Gloomhaven::characterPrepare() {
     // (actions) => monster: a skill
     // step5: 結算 (check the dead condition, see if door's open, ... so on)
     // map->characters[0].attack(5, 3, map->monster);
-    ui->labelBattleInfo->setText("");
     ui->labelBattleInfo->show();
     t2 = 0;
     selectAction(t2);
@@ -285,7 +333,6 @@ void Gloomhaven::characterPrepare() {
 void Gloomhaven::monsterPrepare() {
     ui->labelInstruction->setText("monster randomed a action card");
 //    ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster random action card\n");
-    int cnt = 0;
     struct Node {
         int value = -1;
     };
@@ -296,8 +343,11 @@ void Gloomhaven::monsterPrepare() {
     qDebug() << "random";
     for (size_t i = 0; i < monsters.size(); ++i) {
         if (seen[monsters[i].getName()].value == -1) {
-            ++cnt;
-            seen[monsters[i].getName()].value = dis(gen);
+            int rnd;
+            do {
+                rnd = dis(gen);
+            } while (monsters[i].getInHands()[rnd]);
+            seen[monsters[i].getName()].value = rnd;
             qDebug() << monsters[i].getName() << seen[monsters[i].getName()].value;
         }
         if (monsters[i].getOnCourt()) {
@@ -309,7 +359,7 @@ void Gloomhaven::monsterPrepare() {
 }
 
 void Gloomhaven::sortByAgile() {
-    ui->labelInstruction->setText("sort actions by agile");
+    ui->labelInstruction->setText("do actions by agile");
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "round: " + QString::number(++round) + "\n");
     // sort
     std::vector<std::pair<char, int>> list;
@@ -328,7 +378,7 @@ void Gloomhaven::sortByAgile() {
     });
     for (size_t i = 0; i < list.size(); ++i) {
         for (size_t j = 0; j < list.size() && i != j; ++j) {
-            if (list[i].second == list[j].second) {
+            if (list[i].second == list[j].second && list[i].second != 99) {
                 if (isCharacter(list[i].first) && isCharacter(list[j].first)) {
                     if (characters[list[i].first - 'A'].getSelected()[1] < characters[list[j].first - 'A'].getSelected()[1]) {
                         std::swap(list[i], list[j]);
@@ -357,25 +407,196 @@ void Gloomhaven::sortByAgile() {
     QInputDialog *inputDialog = new QInputDialog(this);
     inputDialog->adjustSize();
     for (const auto& i: list) {
+        QString info;
         if (i.first >= 'A' && i.first <= 'Z') {
-            QStringList options;
-            bool ok;
-            QString result;
-            // 0: 0u + 1d, 1: 0d + 1u, 2: 1u + 0d, 3: 1d + 0u
-            options.push_back(QString(characters[i.first-'A'].getSelectedUp(0).toString() + " + " + characters[i.first-'A'].getSelectedDown(1).toString()));
-            options.push_back(QString(characters[i.first-'A'].getSelectedDown(0).toString() + " + " + characters[i.first-'A'].getSelectedUp(1).toString()));
-            options.push_back(QString(characters[i.first-'A'].getSelectedUp(1).toString() + " + " + characters[i.first-'A'].getSelectedDown(0).toString()));
-            options.push_back(QString(characters[i.first-'A'].getSelectedDown(1).toString() + " + " + characters[i.first-'A'].getSelectedUp(0).toString()));
-            do {
-                result = inputDialog->getItem(this, "Select Character " + QString(i.first) + " Action Detail", "Combations: ", options, 0, false, &ok, inputDialog->windowFlags());
-            } while (!ok);
-            int idx = options.indexOf(result);
-            qDebug() << result << idx;
-//            for (const auto& j: characters[i.first-'A'].)
+            if (characters[i.first-'A'].getStatus()) {
+                QStringList options;
+                bool ok;
+                QString result;
+                // 0: 0u + 1d, 1: 0d + 1u, 2: 1u + 0d, 3: 1d + 0u
+                options.push_back(QString(characters[i.first-'A'].getSelectedUp(0).toString() + " + " + characters[i.first-'A'].getSelectedDown(1).toString()));
+                options.push_back(QString(characters[i.first-'A'].getSelectedDown(0).toString() + " + " + characters[i.first-'A'].getSelectedUp(1).toString()));
+                options.push_back(QString(characters[i.first-'A'].getSelectedUp(1).toString() + " + " + characters[i.first-'A'].getSelectedDown(0).toString()));
+                options.push_back(QString(characters[i.first-'A'].getSelectedDown(1).toString() + " + " + characters[i.first-'A'].getSelectedUp(0).toString()));
+                do {
+                    result = inputDialog->getItem(this, "Select Character " + QString(i.first) + " Action Detail", "Combations: ", options, 0, false, &ok, inputDialog->windowFlags());
+                } while (!ok);
+                int idx = options.indexOf(result);
+                qDebug() << result << idx;
+                std::vector<Action> actionList;
+                if (idx & 1) {
+                    // 1 or 3 (down -> up)
+                    actionList.push_back(characters[i.first-'A'].getSelected(idx == 1 ? 0 : 1, 1));
+                    actionList.push_back(characters[i.first-'A'].getSelected(idx == 1 ? 1 : 0, 0));
+                } else {
+                    // 0 or 2 (up -> down)
+                    actionList.push_back(characters[i.first-'A'].getSelected(idx == 0 ? 0 : 1, 0));
+                    actionList.push_back(characters[i.first-'A'].getSelected(idx == 0 ? 1 : 0, 1));
+                }
+                for (const auto& action: actionList) {
+                    for (const auto& j : action.getSkills()) {
+                        if (j.first == "move") {
+                            QString result;
+                            bool movementOk;
+                            do {
+                                result = inputDialog->getText(this, "Enter Move Instruction For Character " + QString(i.first), "Move Instruction (" + QString::number(j.second) + " steps): ", QLineEdit::Normal, "wsad", &movementOk);
+                                result = result.toLower();
+                                if (result.length() > j.second || !validMove(characters[i.first-'A'].getPos(), result)) {
+                                    movementOk = false;
+                                    QMessageBox msgBox;
+                                    msgBox.setText("Invalid Movement.");
+                                    msgBox.setInformativeText("Enter only wasd and make sure don't 撞到 wall and don't exceed maxium step (" + QString::number(j.second) + ")");
+                                    msgBox.setStandardButtons(QMessageBox::Ok);
+                                    msgBox.setDefaultButton(QMessageBox::Ok);
+                                    msgBox.exec();
+                                }
+                            } while (!movementOk);
+                            int x = characters[i.first-'A'].getPos().getX(), y = characters[i.first-'A'].getPos().getY();
+                            for (const auto& i: result) {
+                                if (i == 'w') --y;
+                                else if (i == 's') ++y;
+                                else if (i == 'a') --x;
+                                else if (i == 'd') ++x;
+                            }
+                            characters[i.first-'A'].setPos(Point2d(y, x));
+                        } else if (j.first == "attack") {
+
+                        } else if (j.first == "heal") {
+                            int healAmount = characters[i.first-'A'].setHp(j.second);
+                            info += QString(i.first) + " heal " + QString::number(j.second) + ", now hp is " + QString::number(healAmount) + "\n";
+                        } else if (j.first == "sheild") {
+                            characters[i.first-'A'].setShield(j.second);
+                            info += QString(i.first) + " shield " + QString::number(j.second) + " this turn" + "\n";
+                        }
+                    }
+                }
+                for (const auto& j : characters[i.first-'A'].getSelected()) {
+                    characters[i.first-'A'].inHands[j] = false;
+                }
+            } else {
+                QStringList options;
+                bool ok;
+                QString result;
+                for (const auto& j : characters[i.first-'A'].inHands) {
+                    if (j.second == false) {
+                        options.push_back(QString::number(j.first));
+                    }
+                }
+                do {
+                    result = inputDialog->getItem(this, "Select Card To Get Deleted For Character " + QString(i.first), "Cards: ", options, 0, false, &ok);
+                } while (!ok);
+                qDebug() << "card" << result.toInt() << "gonna be deleted";
+                characters[i.first-'A'].setHp(2);
+            }
         } else if (i.first >= 'a' && i.first <= 'z') {
-            qDebug() << monsters[i.first - 'a'].getSelected().getInfo();
+            for (const auto& j: monsters[i.first-'a'].getSelected().getSkills()) {
+                if (j.first == "move") {
+                    Point2d cur = monsters[i.first-'a'].getPos();
+                    Point2d tmp(-1, -1);
+                    for (const auto& k: j.second) {
+                        if (k == 'w') {
+                            if (get(cur.getY() - 1, cur.getX()) == MapData::floor) {
+                                cur.setY(cur.getY() - 1);
+                            } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
+                                int x = cur.getX();
+                                int y = cur.getY() - 1;
+                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                    return u.getPos().getX() == x && u.getPos().getY() == y;
+                                });
+                                if (it != monsters.end()) {
+                                    tmp = cur;
+                                    cur.setY(cur.getY() - 1);
+                                }
+                            }
+                        } else if (k == 's') {
+                            if (get(cur.getY() + 1, cur.getX()) == MapData::floor) {
+                                cur.setY(cur.getY() + 1);
+                            } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
+                                int x = cur.getX();
+                                int y = cur.getY() + 1;
+                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                    return u.getPos().getX() == x && u.getPos().getY() == y;
+                                });
+                                if (it != monsters.end()) {
+                                    tmp = cur;
+                                    cur.setY(cur.getY() + 1);
+                                }
+                            }
+                        } else if (k == 'a') {
+                            if (get(cur.getY(), cur.getX() - 1) == MapData::floor) {
+                                cur.setX(cur.getX() - 1);
+                            } else if (get(cur.getY(), cur.getX() - 1) == MapData::obstacle) {
+                                int x = cur.getX() - 1;
+                                int y = cur.getY();
+                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                    return u.getPos().getX() == x && u.getPos().getY() == y;
+                                });
+                                if (it != monsters.end()) {
+                                    tmp = cur;
+                                    cur.setX(cur.getX() - 1);
+                                }
+                            }
+                        } else if (k == 'd') {
+                            if (get(cur.getY(), cur.getX() + 1) == MapData::floor) {
+                                cur.setX(cur.getX() + 1);
+                            } else if (get(cur.getY(), cur.getX() + 1) == MapData::obstacle) {
+                                int x = cur.getX() + 1;
+                                int y = cur.getY();
+                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                    return u.getPos().getX() == x && u.getPos().getY() == y;
+                                });
+                                if (it != monsters.end()) {
+                                    tmp = cur;
+                                    cur.setX(cur.getX() + 1);
+                                }
+                            }
+                        }
+                    }
+                    if (get(cur) == MapData::obstacle) {
+                       cur = tmp;
+                    }
+                    Map::data[monsters[i.first-'a'].getPos().getY()][monsters[i.first-'a'].getPos().getX()] = MapData::floor;
+                    monsters[i.first-'a'].setPos(cur);
+                } else if (j.first == "attack") {
+                    MonsterInfo minfo = monsters[i.first-'a'].getInfo();
+                    Point2d cur = monsters[i.first-'a'].getPos();
+                    std::vector<Character*> targetList;
+                    int range = minfo.attackRange == 0 ? 1 : minfo.attackRange;
+                    for (int i = -range; i <= range; ++i) {
+                        for (int j = -range; j <= range; ++j) {
+                            if (abs(i + j) == range && get(cur.getY() + i, cur.getX() + j) == MapData::character) {
+                                for (auto& ch: characters) {
+                                    if (ch.getPos().getY() == cur.getY() + i && ch.getPos().getY() == cur.getX() + j) {
+                                        targetList.push_back(&ch);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // sort by distance ascending
+                    std::sort(targetList.begin(), targetList.end(), [&](Character* const& u, Character* const& v) {
+                        if (getRange(monsters[i.first-'a'].getPos(), u->getPos()) <= getRange(monsters[i.first-'a'].getPos(), v->getPos())) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    });
+                    // check vision
+
+                } else if (j.first == "heal") {
+                    int r = monsters[i.first-'a'].healHp(j.second.toInt());
+                    info += QString(i.first) + " heal " + j.second + ", now hp is " + QString::number(r) + "\n";
+                } else if (j.first == "shield") {
+                    monsters[i.first-'a'].setShield(j.second.toInt());
+                    info += QString(i.first) + " shield " + j.second + " this turn" + "\n";
+                }
+            }
+            monsters[i.first-'a'].disableActionCard();
         }
+        showMap();
+        ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + info);
     }
+    characterPrepare();
 }
 
 void Gloomhaven::selectAction(int i) {
@@ -466,6 +687,7 @@ void Gloomhaven::on_confirmButton_released()
     }
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "Character " + QString(t2 + 'A') + " selected " + s + "\n");
     characters[t2].setSelected(s);
+    // check if rest
     characters[t2].setStatus(list.size() == 1 ? 0 : 1);
     if (++t2 < (int)characters.size()) {
         selectAction(t2);
@@ -478,4 +700,8 @@ void Gloomhaven::on_confirmButton_released()
 
 int Gloomhaven::isCharacter(char c) const {
     return (c >= 'A' && c <= 'Z');
+}
+
+void Gloomhaven::setMoveMap(const Point2d& pos, int range) {
+//    ui->graphicsView->
 }

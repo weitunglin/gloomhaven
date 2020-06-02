@@ -20,7 +20,9 @@ public:
         floor = 1,
         obstacle = 2,
         door = 3,
-        opened_door = 4
+        opened_door = 4,
+        character = 5,
+        monster = 6
     };
     explicit Map();
     ~Map();
@@ -28,9 +30,11 @@ public:
     int getRow() const;
     int getCol() const;
     Point2d getPos() const;
+    MapData get(int r, int c) const;
+    MapData get(Point2d pos) const;
+    bool validMove(Point2d p, const QString& s) const;
 
 protected:
-    MapData get(int r, int c);
     void readMap(QTextStream& f);
     QString mapFilename;
     Point2d pos;
@@ -43,8 +47,8 @@ protected:
     int characterAmountOnCourt;
     std::vector<Character> characters;
     std::vector<Monster> monsters;
-    void startPosSelectable();
     int t = 0;
+    void startPosSelectable();
 
 signals:
 

@@ -37,12 +37,20 @@ public:
     std::map<int, bool> inHands;
     Action getSelectedUp(int i) const;
     Action getSelectedDown(int i) const;
-    Action getSelected(int i, int j) const;
+    Action getSelected(int index, int part) const;
+    void setShield(int i);
+    int getShield() const;
+    int setHp(int i);
+    void getHp() const;
+    void move(int range);
+    void attack(int value, int range);
 
 private:
     QString characterName;
     QString name;
     int maxHp;
+    int hp;
+    int shield;
     int startHandCardAmount;
     int handCardAmount;
     std::vector<CharacterSkill> cards;
@@ -50,8 +58,6 @@ private:
 //    std::vector<std::pair<CharacterSkill, int /*0: up, 1: down*/>> selected;
     std::vector<int> selected;
     Point2d pos;
-    void move(int range);
-    void attack(int value, int range);
 
 signals:
 

@@ -5,7 +5,7 @@ Character::Character() : pos(-1, -1)
 
 }
 
-Character::Character(const Character& rhs) : characterName(rhs.characterName), maxHp(rhs.maxHp), startHandCardAmount(rhs.startHandCardAmount), handCardAmount(rhs.handCardAmount), pos(-1, -1) {
+Character::Character(const Character& rhs) : characterName(rhs.characterName), maxHp(rhs.maxHp), hp(rhs.hp), shield(rhs.shield), startHandCardAmount(rhs.startHandCardAmount), handCardAmount(rhs.handCardAmount), pos(-1, -1) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(CharacterSkill(rhs.cards[i]));
     }
@@ -24,6 +24,8 @@ QTextStream& operator>>(QTextStream& f, Character& rhs) {
 Character& Character::operator=(Character rhs) {
     std::swap(characterName, rhs.characterName);
     std::swap(maxHp, rhs.maxHp);
+    std::swap(hp, rhs.hp);
+    std::swap(shield, rhs.shield);
     std::swap(startHandCardAmount, rhs.startHandCardAmount);
     std::swap(handCardAmount, rhs.handCardAmount);
     std::swap(pos, rhs.pos);
@@ -40,6 +42,7 @@ void Character::setUp(const std::vector<int>& start) {
     for (int i = 0; i < startHandCardAmount; ++i) {
         inHands.insert({start[i], true});
     }
+    hp = maxHp;
 }
 
 Point2d Character::getPos() const {
@@ -106,10 +109,24 @@ Action Character::getSelectedDown(int i) const {
     return cards[selected[i]].getDown();
 }
 
-Action Character::getSelected(int i, int j) const {
-    if (i == 0) {
-        return cards[selected[j]].getUp();
-    } else if (i == 1) {
-        return cards[selected[j]].getDown();
+Action Character::getSelected(int index, int part) const {
+    if (part == 0) {
+        return cards[selected[index]].getUp();
+    } else if (part == 1) {
+        return cards[selected[index]].getDown();
     }
+}
+
+void Character::setShield(int i) {
+    shield = i;
+}
+
+int Character::getShield() const {
+    return shield;
+}
+
+int Character::setHp(int i) {
+    hp += i;
+    if (hp > maxHp) hp = maxHp;
+    return hp;
 }

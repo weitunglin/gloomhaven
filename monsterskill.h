@@ -14,8 +14,16 @@ public:
     MonsterSkill();
     MonsterSkill(const MonsterSkill& rhs);
     friend QTextStream& operator>>(QTextStream& f, MonsterSkill& rhs);
+    int getCardId() const;
     int getAgile() const;
     QString getInfo() const;
+    bool getReDeal() const;
+    QString getMove() const;
+    int getAttack() const;
+    int getRange() const;
+    int getHeal() const;
+    int getShield() const;
+    std::vector<std::pair<QString, QString>> getSkills() const;
 
 private:
     QString mname;
@@ -28,6 +36,7 @@ private:
     int range;
     int heal;
     int shield;
+    std::vector<std::pair<QString, QString>> skills;
 
 signals:
 

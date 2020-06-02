@@ -1,11 +1,9 @@
 #include "monsterskill.h"
 
-MonsterSkill::MonsterSkill()
-{
-
+MonsterSkill::MonsterSkill() : move(""), attack(0), range(0), heal(0), shield(0) {
 }
 
-MonsterSkill::MonsterSkill(const MonsterSkill& rhs) : info(rhs.info), cardId(rhs.cardId), agile(rhs.agile), reDeal(rhs.reDeal), move(rhs.move), attack(rhs.attack), heal(rhs.heal), shield(rhs.shield) {
+MonsterSkill::MonsterSkill(const MonsterSkill& rhs) : info(rhs.info), cardId(rhs.cardId), agile(rhs.agile), reDeal(rhs.reDeal), move(rhs.move), attack(rhs.attack), range(rhs.range), heal(rhs.heal), shield(rhs.shield), skills(rhs.skills) {
 }
 
 QTextStream& operator>>(QTextStream& f, MonsterSkill& rhs) {
@@ -16,6 +14,7 @@ QTextStream& operator>>(QTextStream& f, MonsterSkill& rhs) {
     QStringList list = line.split(" ");
     for (int i = 0; i <= list.length() / 2; i += 2) {
         qDebug() << list[i] << "," << list[i+1] << endl;
+        rhs.skills.push_back({list[i], list[i+1]});
         if (list[i] == "move") rhs.move = list[i+1];
         else if (list[i] == "attack") rhs.attack = list[i+1].toInt();
         else if (list[i] == "range") rhs.range = list[i+1].toInt();
@@ -28,10 +27,42 @@ QTextStream& operator>>(QTextStream& f, MonsterSkill& rhs) {
     return f;
 }
 
+int MonsterSkill::getCardId() const {
+    return cardId;
+}
+
 int MonsterSkill::getAgile() const {
     return agile;
 }
 
 QString MonsterSkill::getInfo() const {
     return info;
+}
+
+QString MonsterSkill::getMove() const {
+    return move;
+}
+
+bool MonsterSkill::getReDeal() const {
+    return reDeal;
+}
+
+int MonsterSkill::getHeal() const {
+    return heal;
+}
+
+int MonsterSkill::getRange() const {
+    return range;
+}
+
+int MonsterSkill::getAttack() const {
+    return attack;
+}
+
+int MonsterSkill::getShield() const {
+    return shield;
+}
+
+std::vector<std::pair<QString, QString>> MonsterSkill::getSkills() const {
+    return skills;
 }

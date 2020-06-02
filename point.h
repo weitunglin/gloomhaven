@@ -1,8 +1,10 @@
-#ifndef POINT2D_H
+﻿#ifndef POINT2D_H
 #define POINT2D_H
 
 #include <QObject>
 #include <QDebug>
+#include <QPointF>
+#include <QPoint>
 
 class Point2d
 {
@@ -20,6 +22,11 @@ public:
     friend bool operator==(const Point2d& u, const Point2d& v);
     friend bool operator!=(const Point2d& u, const Point2d& v);
     friend QDebug operator<<(QDebug d, const Point2d& rhs);
+    QPointF toQPointF();
+    const QPointF toQPointF() const;
+    QPoint toQPoint();
+    const QPoint toQPoint() const;
+    friend int getRange(const Point2d& p1, const Point2d& p2);
 
 private:
     int y;

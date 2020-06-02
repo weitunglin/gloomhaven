@@ -19,7 +19,7 @@ QTextStream& operator>>(QTextStream& f, Monster& rhs) {
     rhs.info.push_back(MonsterInfo());
     f >> rhs.info[0].maxHp >> rhs.info[0].attackDamage >> rhs.info[0].attackRange;
     f >> rhs.info[1].maxHp >> rhs.info[1].attackDamage >> rhs.info[1].attackRange;
-    rhs.cards = std::vector<MonsterSkill>(6);
+    rhs.cards = std::vector<MonsterSkill>(6, MonsterSkill());
     for (int i = 0; i < 6; ++i) {
         f >> rhs.cards[i];
     }
@@ -36,6 +36,9 @@ void Monster::setUp(int r, int c, int two, int three, int four) {
     twoCharacters = two;
     threeCharacters = three;
     fourCharacters = four;
+    for (size_t i = 0; i < cards.size(); ++i) {
+        inHands.insert({i, true});
+    }
 //    switch(two) {
 //    case 0:
 //        twoCharacters = MonsterStatus::noshow;
@@ -83,10 +86,20 @@ void Monster::setType(int t) {
         type = fourCharacters;
         break;
     }
+    if (type == 1) {
+        hp = normal.maxHp;
+    } else if (type == 2) {
+        hp = elite.maxHp;
+    }
+    shield = 0;
 }
 
 int Monster::getType() const {
     return type;
+}
+
+void Monster::setPos(Point2d pos) {
+    this->pos = pos;
 }
 
 Point2d Monster::getPos() const {
@@ -106,5 +119,34 @@ void Monster::setOnCourt(bool b) {
 }
 
 bool Monster::getOnCourt() const {
-    return  onCourt;
+    return onCourt;
+}
+
+void Monster::setShield(int i) {
+    shield = i;
+}
+
+int Monster::getShield() const {
+    return shield;
+}
+
+int Monster::healHp(int i) {
+    hp += i;
+    if (hp > getInfo().maxHp) {
+        hp = getInfo().maxHp;
+    }
+    return hp;
+}
+
+MonsterInfo Monster::getInfo() const {
+    if (type == 1) return info[0];
+    else if (type == 2) return info[1];
+}
+
+std::map<int, bool> Monster::getInHands() {
+    return inHands;
+}
+
+void Monster::disableActionCard() {
+    inHands[selected.getCardId()] = false;
 }

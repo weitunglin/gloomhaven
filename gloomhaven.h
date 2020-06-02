@@ -21,6 +21,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <math.h>
 
 #include "character.h"
 #include "characterdata.h"
@@ -57,6 +58,7 @@ public:
     void characterPrepare();
     void monsterPrepare();
     void sortByAgile();
+    void setMoveMap(const Point2d& pos, int range);
 
 protected:
     Ui::Gloomhaven *ui;

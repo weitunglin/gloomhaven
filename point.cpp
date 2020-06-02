@@ -55,3 +55,23 @@ int Point2d::getY() const {
 int Point2d::getX() const {
     return x;
 }
+
+QPointF Point2d::toQPointF() {
+    return QPointF(x, y);
+}
+
+const QPointF Point2d::toQPointF() const {
+    return QPointF(x, y);
+}
+
+QPoint Point2d::toQPoint() {
+    return QPoint(x, y);
+}
+
+const QPoint Point2d::toQPoint() const {
+    return QPoint(x, y);
+}
+
+int getRange(const Point2d& p1, const Point2d& p2) {
+    return 1;
+}
