@@ -141,12 +141,17 @@ int Monster::healHp(int i) {
 MonsterInfo Monster::getInfo() const {
     if (type == 1) return info[0];
     else if (type == 2) return info[1];
+    return MonsterInfo{0, 0, 0};
 }
 
-std::map<int, bool> Monster::getInHands() {
+std::map<int, bool>& Monster::getInHands() {
     return inHands;
 }
 
 void Monster::disableActionCard() {
     inHands[selected.getCardId()] = false;
+}
+
+int Monster::getRealAttack() const {
+    return getInfo().attackDamage + selected.getAttack();
 }

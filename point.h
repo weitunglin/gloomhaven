@@ -21,6 +21,7 @@ public:
     Point2d& operator=(Point2d rhs);
     friend bool operator==(const Point2d& u, const Point2d& v);
     friend bool operator!=(const Point2d& u, const Point2d& v);
+    friend Point2d operator-(const Point2d& u, const Point2d& v);
     friend QDebug operator<<(QDebug d, const Point2d& rhs);
     QPointF toQPointF();
     const QPointF toQPointF() const;

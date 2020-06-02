@@ -41,13 +41,16 @@ public:
     void setShield(int i);
     int getShield() const;
     int setHp(int i);
-    void getHp() const;
+    int getHp() const;
     void move(int range);
     void attack(int value, int range);
+    void setId(QString s);
+    QString getId() const;
 
 private:
     QString characterName;
     QString name;
+    QString id;
     int maxHp;
     int hp;
     int shield;

@@ -44,8 +44,9 @@ public:
     int healHp(int i);
     void getHp() const;
     MonsterInfo getInfo() const;
-    std::map<int, bool> getInHands();
+    std::map<int, bool>& getInHands();
     void disableActionCard();
+    int getRealAttack() const;
 
 private:
     QString monsterName;

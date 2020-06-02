@@ -30,6 +30,10 @@ bool operator==(const Point2d& u, const Point2d& v) {
     return (u.x == v.x && u.y == v.y);
 }
 
+Point2d operator-(const Point2d& u, const Point2d& v) {
+    return Point2d(u.getY() - v.getY(), u.getX() - v.getX());
+}
+
 QDebug operator<<(QDebug d, const Point2d& rhs) {
     d << "Y: " << rhs.y << ", X: " << rhs.x << endl;
     return d;
@@ -73,5 +77,5 @@ const QPoint Point2d::toQPoint() const {
 }
 
 int getRange(const Point2d& p1, const Point2d& p2) {
-    return 1;
+    return (abs(p1.getX() - p2.getX()) + abs(p1.getY() - p2.getY()));
 }

@@ -5,7 +5,7 @@ Character::Character() : pos(-1, -1)
 
 }
 
-Character::Character(const Character& rhs) : characterName(rhs.characterName), maxHp(rhs.maxHp), hp(rhs.hp), shield(rhs.shield), startHandCardAmount(rhs.startHandCardAmount), handCardAmount(rhs.handCardAmount), pos(-1, -1) {
+Character::Character(const Character& rhs) : characterName(rhs.characterName), id(rhs.id), maxHp(rhs.maxHp), hp(rhs.hp), shield(rhs.shield), startHandCardAmount(rhs.startHandCardAmount), handCardAmount(rhs.handCardAmount), pos(-1, -1) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(CharacterSkill(rhs.cards[i]));
     }
@@ -30,6 +30,7 @@ Character& Character::operator=(Character rhs) {
     std::swap(handCardAmount, rhs.handCardAmount);
     std::swap(pos, rhs.pos);
     std::swap(cards, rhs.cards);
+    std::swap(id, rhs.id);
     return *this;
 }
 
@@ -115,6 +116,7 @@ Action Character::getSelected(int index, int part) const {
     } else if (part == 1) {
         return cards[selected[index]].getDown();
     }
+    return Action();
 }
 
 void Character::setShield(int i) {
@@ -129,4 +131,16 @@ int Character::setHp(int i) {
     hp += i;
     if (hp > maxHp) hp = maxHp;
     return hp;
+}
+
+int Character::getHp() const {
+    return hp;
+}
+
+void Character::setId(QString s) {
+    id = s;
+}
+
+QString Character::getId() const {
+    return id;
 }

@@ -100,3 +100,21 @@ bool Map::validMove(Point2d p, const QString &s) const {
     }
     return true;
 }
+
+bool Map::invision(const Point2d &p1, const Point2d &p2) const {
+    float x = p2.getX() - p1.getX(), y = p2.getY() - p1.getY();
+    int step = fmax(fabs(x), fabs(y));
+    float dx = (x / step), dy = (y / step);
+
+    for (int i = 0; i < step + 1; ++i) {
+        int x1 = round(x) + p1.getX();    // 四捨五入
+        int y1 = round(y) + p1.getY();
+        // check if there is a wall
+        if (data[y1][x1] == MapData::wall) {
+            return false;
+        }
+        x += dx;
+        y += dy;
+    }
+    return true;
+}

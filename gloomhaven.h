@@ -19,6 +19,7 @@
 #include <QtDebug>
 #include <string>
 #include <iostream>
+#include <iterator>
 #include <algorithm>
 #include <random>
 #include <math.h>
@@ -57,8 +58,9 @@ public:
     void selectAction(int i);
     void characterPrepare();
     void monsterPrepare();
-    void sortByAgile();
-    void setMoveMap(const Point2d& pos, int range);
+    void actionByAgile();
+    void cleanStatus();
+    void checkGameStatus();
 
 protected:
     Ui::Gloomhaven *ui;

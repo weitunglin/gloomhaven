@@ -160,10 +160,12 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
         item->setPos(QPointF(c * itemWidth, r * itemHeight));
         item->setData(0, QVariant{QPointF{qreal(c), qreal(r)}});
+        bool found = false;
         // check if there is a character
         for (size_t i = 0; i < characters.size(); ++i) {
             if (characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
                 qDebug() << "found character" << endl;
+                found = true;
                 Map::data[r][c] = MapData::character;
                 QPixmap p = item->pixmap();
                 QPainter *painter = new QPainter(&p);
@@ -175,6 +177,9 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
                 item->setPixmap(p);
             }
         }
+        if (!found) {
+            Map::data[r][c] = MapData::floor;
+        }
         scene->addItem(item);
 //        qDebug() << "floor point: (" << r << "," << c << ")" << endl;
 //        qDebug() << "(" << c * itemWidth << "," << r * itemHeight << endl;
@@ -183,11 +188,13 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
         item->setPos(QPointF(c * itemWidth, r * itemHeight));
         item->setData(0, QVariant{QPointF{qreal(c), qreal(r)}});
+        bool found = false;
         // check if there is a monster
         for (size_t i = 0; i < monsters.size(); ++i) {
 //            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
             if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
                 qDebug() << "found monster" << endl;
+                found = true;
                 Map::data[r][c] = MapData::monster;
                 monsters[i].setOnCourt(true);
                 QPixmap p = item->pixmap();
@@ -199,6 +206,9 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
                 delete painter;
                 item->setPixmap(p);
             }
+        }
+        if (!found) {
+            Map::data[r][c] = MapData::floor;
         }
         scene->addItem(item);
     }
@@ -274,10 +284,11 @@ void Gloomhaven::preGameInput() {
             std::vector<int> startCards;
             for (QString i: c) {
                 startCards.push_back(i.toInt());
-                qDebug() << i.toInt() << " ";
+//                qDebug() << i.toInt() << " ";
             }
-            qDebug() << endl;
+//            qDebug() << endl;
             characters[i].setUp(startCards);
+            characters[i].setId(QString(i + 'A'));
             qDebug() << "inhand size: " << characters[i].inHands.size() << endl;
             list.pop_front();
         }
@@ -351,14 +362,16 @@ void Gloomhaven::monsterPrepare() {
             qDebug() << monsters[i].getName() << seen[monsters[i].getName()].value;
         }
         if (monsters[i].getOnCourt()) {
+            monsters[i].getInHands()[seen[monsters[i].getName()].value] = false;
             monsters[i].setSelected(seen[monsters[i].getName()].value);
             ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster " + QString((int)i + 'a') + " picked no." + QString::number(seen[monsters[i].getName()].value) + " card\n");
         }
     }
-    sortByAgile();
+    cleanStatus();
+    actionByAgile();
 }
 
-void Gloomhaven::sortByAgile() {
+void Gloomhaven::actionByAgile() {
     ui->labelInstruction->setText("do actions by agile");
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "round: " + QString::number(++round) + "\n");
     // sort
@@ -464,7 +477,7 @@ void Gloomhaven::sortByAgile() {
                         } else if (j.first == "heal") {
                             int healAmount = characters[i.first-'A'].setHp(j.second);
                             info += QString(i.first) + " heal " + QString::number(j.second) + ", now hp is " + QString::number(healAmount) + "\n";
-                        } else if (j.first == "sheild") {
+                        } else if (j.first == "shield") {
                             characters[i.first-'A'].setShield(j.second);
                             info += QString(i.first) + " shield " + QString::number(j.second) + " this turn" + "\n";
                         }
@@ -566,7 +579,7 @@ void Gloomhaven::sortByAgile() {
                         for (int j = -range; j <= range; ++j) {
                             if (abs(i + j) == range && get(cur.getY() + i, cur.getX() + j) == MapData::character) {
                                 for (auto& ch: characters) {
-                                    if (ch.getPos().getY() == cur.getY() + i && ch.getPos().getY() == cur.getX() + j) {
+                                    if (ch.getPos().getY() == cur.getY() + i && ch.getPos().getX() == cur.getX() + j) {
                                         targetList.push_back(&ch);
                                     }
                                 }
@@ -582,7 +595,34 @@ void Gloomhaven::sortByAgile() {
                         }
                     });
                     // check vision
+                    bool foundTarget = false;
+                    int foundIdx = 0;
+                    for (const auto& tar: targetList) {
+                        if (!invision(monsters[i.first-'a'].getPos(), tar->getPos())) {
+                            ++foundIdx;
+                            continue;
+                        }
+                        foundTarget = true;
+                    }
+                    if (!foundTarget) {
+                        qDebug() << "no one lock in distance";
+                        info += "no one lock\n";
 
+                    } else {
+                        qDebug() << QString(i.first) << " lock " << targetList[foundIdx]->getId() << " in distance " << QString::number(getRange(monsters[i.first-'a'].getPos(), targetList[foundIdx]->getPos()));
+                        info += QString(i.first) + " lock " + targetList[foundIdx]->getId() + " in distance " + QString::number(getRange(monsters[i.first-'a'].getPos(), targetList[foundIdx]->getPos())) + "\n";
+                        int shield = targetList[foundIdx]->getShield();
+                        int dam = monsters[i.first-'a'].getRealAttack() - shield;
+                        dam = (dam < 0) ? 0 : dam;
+                        int remain = targetList[foundIdx]->setHp(-dam);
+                        qDebug() << "Damage:" << dam << " shield" << shield << " hp left: " << QString::number(targetList[foundIdx]->getHp());
+                        info += QString(i.first) + " attack " + targetList[foundIdx]->getId() + " " + QString::number(dam) + " damage, " + targetList[foundIdx]->getId() + " shield " + QString::number(shield)
+                            + ", " + targetList[foundIdx]->getId() + " remain " + QString::number(remain) + " hp\n";
+                        if (remain <= 0) {
+                            qDebug() << targetList[foundIdx]->getId() << "killed";
+                            info += targetList[foundIdx]->getId() + " is killed!!\n";
+                        }
+                    }
                 } else if (j.first == "heal") {
                     int r = monsters[i.first-'a'].healHp(j.second.toInt());
                     info += QString(i.first) + " heal " + j.second + ", now hp is " + QString::number(r) + "\n";
@@ -596,7 +636,33 @@ void Gloomhaven::sortByAgile() {
         showMap();
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + info);
     }
+    for (auto& i: monsters) {
+        if (i.getOnCourt() && i.getSelected().getReDeal()) {
+            for (auto& j: i.getInHands()) {
+                j.second = true;
+            }
+        }
+    }
+    checkGameStatus();
+}
+
+void Gloomhaven::checkGameStatus() {
+    // check if character win or if monster win -> open new game
     characterPrepare();
+}
+
+void Gloomhaven::cleanStatus() {
+    for (auto &i: characters) {
+        i.setShield(0);
+    }
+    for (auto &i: monsters) {
+        i.setShield(0);
+        if (i.getOnCourt() && i.getSelected().getReDeal()) {
+            for (auto &j : i.getInHands()) {
+                j.second = true;
+            }
+        }
+    }
 }
 
 void Gloomhaven::selectAction(int i) {
@@ -605,15 +671,18 @@ void Gloomhaven::selectAction(int i) {
     QList<QListWidgetItem*> items;
     QList<QListWidgetItem*> itemsDisabled;
     QListWidgetItem* rest = new QListWidgetItem("長休");
+    bool die = true;
     if (!characters[i].restable()) {
         QFont font;
         font.setStrikeOut(true);
         rest->setFont(font);
         rest->setFlags(rest->flags() & ~Qt::ItemFlag::ItemIsSelectable);
+        die = false;
     }
     ui->listWidget->insertItem(0, rest);
     for (const auto& card: characters[i].inHands) {
         if (card.second == true) {
+            die = false;
             qDebug() << "+" << card.first;
             QListWidgetItem *i = new QListWidgetItem(QString::number(card.first));
             items.push_back(i);
@@ -626,6 +695,9 @@ void Gloomhaven::selectAction(int i) {
             i->setFlags(i->flags() & ~Qt::ItemFlag::ItemIsSelectable);
             itemsDisabled.push_back(i);
         }
+    }
+    if (die) {
+        // no option then die
     }
     for (int i = 0; i < items.size(); ++i) {
         ui->listWidget->insertItem(i, items[i]);
@@ -689,6 +761,27 @@ void Gloomhaven::on_confirmButton_released()
     characters[t2].setSelected(s);
     // check if rest
     characters[t2].setStatus(list.size() == 1 ? 0 : 1);
+    if (!characters[t2].getStatus()) {
+        QStringList options;
+        bool ok;
+        QString result;
+        for (auto &i: characters[t2].inHands) {
+            if (i.second == false) {
+                options.push_back(QString::number(i.first));
+            }
+        }do {
+            result = QInputDialog::getItem(this, "Remove A Card For Character " + QString(t2 + 'A'), "Disable cards: ", options, 0, false, &ok);
+        } while (!ok);
+        for(auto it = characters[t2].inHands.begin(); it != characters[t2].inHands.end(); ++it) {
+            if (it->first == result.toInt()) {
+                characters[t2].inHands.erase(it);
+                break;
+            }
+        }
+        for (auto &i: characters[t2].inHands) {
+            i.second = true;
+        }
+    }
     if (++t2 < (int)characters.size()) {
         selectAction(t2);
     } else {
@@ -700,8 +793,4 @@ void Gloomhaven::on_confirmButton_released()
 
 int Gloomhaven::isCharacter(char c) const {
     return (c >= 'A' && c <= 'Z');
-}
-
-void Gloomhaven::setMoveMap(const Point2d& pos, int range) {
-//    ui->graphicsView->
 }

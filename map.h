@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <list>
+#include <math.h>
 
 #include "point.h"
 #include "character.h"
@@ -33,6 +34,7 @@ public:
     MapData get(int r, int c) const;
     MapData get(Point2d pos) const;
     bool validMove(Point2d p, const QString& s) const;
+    bool invision(const Point2d& p1, const Point2d& p2) const;
 
 protected:
     void readMap(QTextStream& f);
