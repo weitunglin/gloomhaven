@@ -751,6 +751,12 @@ void Gloomhaven::on_confirmButton_released()
     if ((checkRest != list.end() && list.size() != 1) || (checkRest == list.end() && list.size() != 2)) {
         // (select rest and others) or (no rest and not two cards)
         selectAction(t2);
+        QMessageBox msgBox;
+        msgBox.setText("Invalid Action Selection.");
+        msgBox.setInformativeText("Select Rest or 2 action cards");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.exec();
         return;
     }
     QString s;
