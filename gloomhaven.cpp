@@ -787,6 +787,7 @@ void Gloomhaven::on_confirmButton_released()
         for (auto &i: characters[t2].inHands) {
             i.second = true;
         }
+        characters[t2].setHp(2);
     }
     if (++t2 < (int)characters.size()) {
         selectAction(t2);
