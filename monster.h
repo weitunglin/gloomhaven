@@ -42,14 +42,20 @@ public:
     void setShield(int i);
     int getShield() const;
     int healHp(int i);
-    void getHp() const;
+    int setHp(int i);
+    int getHp() const;
     MonsterInfo getInfo() const;
     std::map<int, bool>& getInHands();
     void disableActionCard();
     int getRealAttack() const;
+    void setId(QString s);
+    QString getId() const;
+    void setAlive(bool b);
+    bool getAlive() const;
 
 private:
     QString monsterName;
+    QString id;
     MonsterInfo normal;
     MonsterInfo elite;
     int hp;
@@ -59,11 +65,12 @@ private:
     int fourCharacters;
     std::vector<MonsterSkill> cards;
     MonsterSkill selected;
-    int type;
+    int type; // 0: noshow, 1: normal, 2: elite
     std::vector<MonsterInfo> info;
     Point2d pos;
     bool onCourt;
     std::map<int, bool> inHands;
+    bool alive;
 
 signals:
 

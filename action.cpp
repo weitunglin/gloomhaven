@@ -31,6 +31,6 @@ QString Action::toString() const {
     return detail;
 }
 
-std::vector<std::pair<QString, int>> Action::getSkills() const {
+std::vector<std::pair<QString, int>> Action::getSkills() {
     return skills;
 }

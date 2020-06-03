@@ -46,6 +46,8 @@ public:
     void attack(int value, int range);
     void setId(QString s);
     QString getId() const;
+    void setAlive(bool b);
+    bool getAlive() const;
 
 private:
     QString characterName;
@@ -61,6 +63,7 @@ private:
 //    std::vector<std::pair<CharacterSkill, int /*0: up, 1: down*/>> selected;
     std::vector<int> selected;
     Point2d pos;
+    bool alive;
 
 signals:
 

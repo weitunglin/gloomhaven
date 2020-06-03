@@ -5,7 +5,7 @@ Character::Character() : pos(-1, -1)
 
 }
 
-Character::Character(const Character& rhs) : characterName(rhs.characterName), id(rhs.id), maxHp(rhs.maxHp), hp(rhs.hp), shield(rhs.shield), startHandCardAmount(rhs.startHandCardAmount), handCardAmount(rhs.handCardAmount), pos(-1, -1) {
+Character::Character(const Character& rhs) : characterName(rhs.characterName), id(rhs.id), maxHp(rhs.maxHp), hp(rhs.hp), shield(rhs.shield), startHandCardAmount(rhs.startHandCardAmount), handCardAmount(rhs.handCardAmount), pos(-1, -1), alive(rhs.alive) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(CharacterSkill(rhs.cards[i]));
     }
@@ -31,6 +31,7 @@ Character& Character::operator=(Character rhs) {
     std::swap(pos, rhs.pos);
     std::swap(cards, rhs.cards);
     std::swap(id, rhs.id);
+    std::swap(alive, rhs.alive);
     return *this;
 }
 
@@ -44,6 +45,8 @@ void Character::setUp(const std::vector<int>& start) {
         inHands.insert({start[i], true});
     }
     hp = maxHp;
+    alive = true;
+    shield = 0;
 }
 
 Point2d Character::getPos() const {
@@ -143,4 +146,12 @@ void Character::setId(QString s) {
 
 QString Character::getId() const {
     return id;
+}
+
+void Character::setAlive(bool b) {
+    alive = b;
+}
+
+bool Character::getAlive() const {
+    return alive;
 }

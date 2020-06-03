@@ -16,7 +16,7 @@ public:
     void setUp(QString s);
 //    friend QTextStream& operator>>(QTextStream& f, Action&);
     QString toString() const;
-    std::vector<std::pair<QString, int>> getSkills() const;
+    std::vector<std::pair<QString, int>> getSkills();
 
 private:
     std::vector<std::pair<QString, int>> skills;

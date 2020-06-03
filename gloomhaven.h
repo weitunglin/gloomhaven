@@ -60,7 +60,7 @@ public:
     void monsterPrepare();
     void actionByAgile();
     void cleanStatus();
-    void checkGameStatus();
+    void checkGameStatus(); 
 
 protected:
     Ui::Gloomhaven *ui;

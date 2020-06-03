@@ -100,6 +100,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
         item->setPos(QPointF(c * itemWidth, r * itemHeight));
         item->setData(0, QVariant{QPointF{qreal(c), qreal(r)}});
+        // set item selectable to choose the start position for each character
         if (t < (int)(characters.size()) && itStart != startPos.end()) {
             auto itSelectable = std::find_if(characters.begin(), characters.end(), [r, c](const Character& u) {
                 return u.getPos() == Point2d(r, c);
@@ -110,8 +111,8 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         }
         // check if there is a character
         for (size_t i = 0; i < characters.size(); ++i) {
-            if (characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
-                qDebug() << "found character" << endl;
+            if (characters[i].getAlive() && characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
+//                qDebug() << "found character" << endl;
                 Map::data[r][c] = MapData::character;
                 QPixmap p = item->pixmap();
                 QPainter *painter = new QPainter(&p);
@@ -126,8 +127,8 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         // check if there is a monster
         for (size_t i = 0; i < monsters.size(); ++i) {
 //            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
-            if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
-                qDebug() << "found monster" << endl;
+            if ((monsters[i].getType() != 0) && monsters[i].getAlive() && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
+//                qDebug() << "found monster" << endl;
                 Map::data[r][c] = MapData::monster;
                 monsters[i].setOnCourt(true);
                 QPixmap p = item->pixmap();
@@ -163,7 +164,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         bool found = false;
         // check if there is a character
         for (size_t i = 0; i < characters.size(); ++i) {
-            if (characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
+            if (characters[i].getAlive() && characters[i].getPos().getY() == r && characters[i].getPos().getX() == c) {
                 qDebug() << "found character" << endl;
                 found = true;
                 Map::data[r][c] = MapData::character;
@@ -192,7 +193,7 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
         // check if there is a monster
         for (size_t i = 0; i < monsters.size(); ++i) {
 //            qDebug() << monsters[i].getPos().getY() << monsters[i].getPos().getX() << monsters[i].getType();
-            if ((monsters[i].getType() != 0) && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
+            if ((monsters[i].getType() != 0) && monsters[i].getAlive() && monsters[i].getPos().getY() == r && monsters[i].getPos().getX() == c) {
                 qDebug() << "found monster" << endl;
                 found = true;
                 Map::data[r][c] = MapData::monster;
@@ -320,6 +321,7 @@ void Gloomhaven::preGameInput() {
             }));
             m.setUp(r, c, two, three, four);
             m.setType(characterAmountOnCourt);
+            m.setId(QString(i + 'a'));
             monsters.push_back(m);
             qDebug() << monsters.back().getPos().getY() << "," << monsters.back().getPos().getX() << "->" << mname << ":" << monsters.back().getType() << endl;
         }
@@ -377,7 +379,7 @@ void Gloomhaven::actionByAgile() {
     // sort
     std::vector<std::pair<char, int>> list;
     for (size_t i = 0; i < characters.size(); ++i) {
-        if (characters[i].getStatus()) {
+        if (characters[i].getAlive() && characters[i].getStatus()) {
             list.push_back({i+'A', characters[i].getActionAgile()});
         }
     }
@@ -446,8 +448,8 @@ void Gloomhaven::actionByAgile() {
                     actionList.push_back(characters[i.first-'A'].getSelected(idx == 0 ? 0 : 1, 0));
                     actionList.push_back(characters[i.first-'A'].getSelected(idx == 0 ? 1 : 0, 1));
                 }
-                for (const auto& action: actionList) {
-                    for (const auto& j : action.getSkills()) {
+                for (auto& action: actionList) {
+                    for (auto& j : action.getSkills()) {
                         if (j.first == "move") {
                             QString result;
                             bool movementOk;
@@ -473,7 +475,59 @@ void Gloomhaven::actionByAgile() {
                             }
                             characters[i.first-'A'].setPos(Point2d(y, x));
                         } else if (j.first == "attack") {
-
+                            qDebug() << "character attack";
+                            int range = 1;
+                            for (const auto& k: action.getSkills()) {
+                                if (k.first == "range") {
+                                    range = k.second;
+                                    break;
+                                }
+                            }
+                            Point2d cur = characters[i.first-'A'].getPos();
+                            std::vector<Monster*> targetList;
+                            QStringList targetOptions;
+                            targetOptions.push_back("no attack");
+                            for (int _i = -range; _i <= range; ++_i) {
+                                for (int _j = -range; _j <= range; ++_j) {
+                                    if (abs(_i + _j) == range && get(cur.getY() + _i, cur.getX() + _j) == MapData::monster) {
+                                        for (auto& mon: monsters) {
+                                            if (mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
+                                                targetList.push_back(&mon);
+                                                targetOptions.push_back(mon.getId());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            bool targetOk;
+                            QString targetResult;
+                            do {
+                                targetResult = inputDialog->getItem(this, "Select A Target For Character " + QString(i.first) + " To Attack", "Valid Targets: ", targetOptions, 0, false, &targetOk);
+                            } while (!targetOk);
+                            if (targetResult == "no attack") {
+                                info += "Character " + QString(i.first) + " give up attack\n";
+                            } else {
+                                auto tar = std::find_if(monsters.begin(), monsters.end(), [=](const Monster& u) {
+                                    return u.getId() == targetResult;
+                                });
+                                if (tar == monsters.end()) {
+                                    info += "error target!!\n";
+                                } else {
+                                    int shield = tar->getShield();
+                                    int dam = j.second - shield;
+                                    dam = (dam < 0) ? 0 : dam;
+                                    int remain = tar->setHp(-dam);
+                                    qDebug() << "Damage:" << dam << " shield" << shield << " hp left: " << QString::number(tar->getHp());
+                                    info += QString(i.first) + " attack " + tar->getId() + " " + QString::number(dam) + " damage, " + tar->getId() + " shield " + QString::number(shield)
+                                        + ", " + tar->getId() + " remain " + QString::number(remain) + " hp\n";
+                                    if (remain <= 0) {
+                                        qDebug() << tar->getId() << "killed";
+                                        info += tar->getId() + " is killed!!\n";
+                                        tar->setAlive(false);
+                                        tar->setOnCourt(false);
+                                    }
+                                }
+                            }
                         } else if (j.first == "heal") {
                             int healAmount = characters[i.first-'A'].setHp(j.second);
                             info += QString(i.first) + " heal " + QString::number(j.second) + ", now hp is " + QString::number(healAmount) + "\n";
@@ -575,11 +629,11 @@ void Gloomhaven::actionByAgile() {
                     Point2d cur = monsters[i.first-'a'].getPos();
                     std::vector<Character*> targetList;
                     int range = minfo.attackRange == 0 ? 1 : minfo.attackRange;
-                    for (int i = -range; i <= range; ++i) {
-                        for (int j = -range; j <= range; ++j) {
-                            if (abs(i + j) == range && get(cur.getY() + i, cur.getX() + j) == MapData::character) {
+                    for (int _i = -range; _i <= range; ++_i) {
+                        for (int _j = -range; _j <= range; ++_j) {
+                            if (abs(_i + _j) == range && get(cur.getY() + _i, cur.getX() + _j) == MapData::character) {
                                 for (auto& ch: characters) {
-                                    if (ch.getPos().getY() == cur.getY() + i && ch.getPos().getX() == cur.getX() + j) {
+                                    if (ch.getPos().getY() == cur.getY() + _i && ch.getPos().getX() == cur.getX() + _j) {
                                         targetList.push_back(&ch);
                                     }
                                 }
@@ -621,6 +675,7 @@ void Gloomhaven::actionByAgile() {
                         if (remain <= 0) {
                             qDebug() << targetList[foundIdx]->getId() << "killed";
                             info += targetList[foundIdx]->getId() + " is killed!!\n";
+                            targetList[foundIdx]->setAlive(false);
                         }
                     }
                 } else if (j.first == "heal") {
@@ -656,8 +711,8 @@ void Gloomhaven::cleanStatus() {
         i.setShield(0);
     }
     for (auto &i: monsters) {
-        i.setShield(0);
         if (i.getOnCourt() && i.getSelected().getReDeal()) {
+            i.setShield(0);
             for (auto &j : i.getInHands()) {
                 j.second = true;
             }
@@ -666,6 +721,10 @@ void Gloomhaven::cleanStatus() {
 }
 
 void Gloomhaven::selectAction(int i) {
+    if (!characters[i].getAlive()) {
+        selectAction(++i);
+        return;
+    }
     ui->labelInstruction->setText("Select an action for character " + QString(i + 'A'));
     ui->listWidget->clear();
     QList<QListWidgetItem*> items;
@@ -698,6 +757,16 @@ void Gloomhaven::selectAction(int i) {
     }
     if (die) {
         // no option then die
+        characters[i].setAlive(false);
+        ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "Character " + QString(i+'A') + " killed\n");
+        if (++t2 < (int)characters.size()) {
+            selectAction(t2);
+        } else {
+            ui->confirmButton->hide();
+            ui->listWidget->hide();
+            monsterPrepare();
+        }
+        return;
     }
     for (int i = 0; i < items.size(); ++i) {
         ui->listWidget->insertItem(i, items[i]);
@@ -728,6 +797,7 @@ void Gloomhaven::selectedChange() {
             disconnect(ui->graphicsView->scene(), SIGNAL(selectionChanged()), this, SLOT(selectedChange()));
             ui->graphicsView->scene()->clearSelection();
             showMap();
+            cleanStatus();
             characterPrepare();
         }
     }
@@ -768,6 +838,7 @@ void Gloomhaven::on_confirmButton_released()
     // check if rest
     characters[t2].setStatus(list.size() == 1 ? 0 : 1);
     if (!characters[t2].getStatus()) {
+        // rest
         QStringList options;
         bool ok;
         QString result;
@@ -792,6 +863,7 @@ void Gloomhaven::on_confirmButton_released()
     if (++t2 < (int)characters.size()) {
         selectAction(t2);
     } else {
+        // done character prepare part
         ui->confirmButton->hide();
         ui->listWidget->hide();
         monsterPrepare();

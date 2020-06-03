@@ -4,7 +4,7 @@ Monster::Monster(QObject *parent) : QObject(parent), pos(-1, -1)
 {
 }
 
-Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), twoCharacters(rhs.twoCharacters), threeCharacters(rhs.threeCharacters), fourCharacters(rhs.fourCharacters), type(rhs.type), pos(rhs.pos), onCourt(false) {
+Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), id(rhs.id), twoCharacters(rhs.twoCharacters), threeCharacters(rhs.threeCharacters), fourCharacters(rhs.fourCharacters), type(rhs.type), pos(rhs.pos), onCourt(false), alive(rhs.alive) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(MonsterSkill(rhs.cards[i]));
     }
@@ -39,6 +39,8 @@ void Monster::setUp(int r, int c, int two, int three, int four) {
     for (size_t i = 0; i < cards.size(); ++i) {
         inHands.insert({i, true});
     }
+    alive = true;
+    shield = 0;
 //    switch(two) {
 //    case 0:
 //        twoCharacters = MonsterStatus::noshow;
@@ -86,12 +88,9 @@ void Monster::setType(int t) {
         type = fourCharacters;
         break;
     }
-    if (type == 1) {
-        hp = normal.maxHp;
-    } else if (type == 2) {
-        hp = elite.maxHp;
+    if (type != 0) {
+        hp = getInfo().maxHp;
     }
-    shield = 0;
 }
 
 int Monster::getType() const {
@@ -138,6 +137,18 @@ int Monster::healHp(int i) {
     return hp;
 }
 
+int Monster::setHp(int i) {
+    hp += i;
+    if (hp > getInfo().maxHp) {
+        hp = getInfo().maxHp;
+    }
+    return hp;
+}
+
+int Monster::getHp() const {
+    return hp;
+}
+
 MonsterInfo Monster::getInfo() const {
     if (type == 1) return info[0];
     else if (type == 2) return info[1];
@@ -154,4 +165,20 @@ void Monster::disableActionCard() {
 
 int Monster::getRealAttack() const {
     return getInfo().attackDamage + selected.getAttack();
+}
+
+void Monster::setId(QString s) {
+    id = s;
+}
+
+QString Monster::getId() const {
+    return id;
+}
+
+void Monster::setAlive(bool b) {
+    alive = b;
+}
+
+bool Monster::getAlive() const {
+    return alive;
 }
