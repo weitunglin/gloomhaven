@@ -49,15 +49,15 @@ void Gloomhaven::setFileData(QString cFilename, QString mFilename, int mode) {
     }
     /* process pregame data */
     preGameInput();
+    itemWidth = 800 / col;
+    itemHeight = 600 / row;
 }
 
 void Gloomhaven::showMap() {
     QGraphicsScene* scene = new QGraphicsScene();
-    qDebug() << "g view size: (" << 800 << "," << 600 << ")" << endl;
-    itemWidth = 800 / col;
-    itemHeight = 600 / row;
-    qDebug() << "itemSize: (" << itemWidth << "," << itemHeight << ")" << endl;
-    qDebug() << "start: (" << getPos().getY() << "," << getPos().getX() << ")" << endl;
+//    qDebug() << "g view size: (" << 800 << "," << 600 << ")" << endl;
+//    qDebug() << "itemSize: (" << itemWidth << "," << itemHeight << ")" << endl;
+//    qDebug() << "start: (" << getPos().getY() << "," << getPos().getX() << ")" << endl;
     std::vector<Point2d> traveled;
     drawBlock(scene, getPos().getY(), getPos().getX(), traveled);
     QObject::connect(scene, SIGNAL(selectionChanged()), this, SLOT(selectedChange()));
@@ -150,12 +150,17 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
             QMessageBox::information(this, "Image Viewer", "Error Displaying image");
             return;
         }
+        if (openDoor) {
+            qDebug() << "open door" << r << c;
+            image = QImage(":/images/map_floor.jpg");
+            Map::data[r][c] = MapData::floor;
+        }
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
         item->setPos((QPointF(c * itemWidth, r * itemHeight)));
         item->setData(0, QVariant{QPointF{qreal(c), qreal(r)}});
         scene->addItem(item);
-        qDebug() << "floor point: (" << r << "," << c << ")" << endl;
-        qDebug() << "(" << c * itemWidth << "," << r * itemHeight << endl;
+//        qDebug() << "floor point: (" << r << "," << c << ")" << endl;
+//        qDebug() << "(" << c * itemWidth << "," << r * itemHeight << endl;
     } else if (get(r, c) == Map::MapData::character) {
         QImage image = QImage(":/images/map_floor.jpg");
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
@@ -420,11 +425,11 @@ void Gloomhaven::actionByAgile() {
     }
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + s);
     QInputDialog *inputDialog = new QInputDialog(this);
-    inputDialog->adjustSize();
+    inputDialog->setGeometry(300, 500, 200, 150);
     for (const auto& i: list) {
         QString info;
         if (i.first >= 'A' && i.first <= 'Z') {
-            if (characters[i.first-'A'].getStatus()) {
+            if (characters[i.first-'A'].getStatus() && characters[i.first-'A'].getAlive()) {
                 QStringList options;
                 bool ok;
                 QString result;
@@ -474,22 +479,24 @@ void Gloomhaven::actionByAgile() {
                                 else if (i == 'd') ++x;
                             }
                             characters[i.first-'A'].setPos(Point2d(y, x));
+                            showMap();
                         } else if (j.first == "attack") {
                             qDebug() << "character attack";
-                            int range = 1;
+                            int attackRange = 1;
                             for (const auto& k: action.getSkills()) {
                                 if (k.first == "range") {
-                                    range = k.second;
+                                    attackRange = k.second;
                                     break;
                                 }
                             }
                             Point2d cur = characters[i.first-'A'].getPos();
                             std::vector<Monster*> targetList;
                             QStringList targetOptions;
-                            targetOptions.push_back("no attack");
-                            for (int _i = -range; _i <= range; ++_i) {
-                                for (int _j = -range; _j <= range; ++_j) {
-                                    if (abs(_i + _j) == range && get(cur.getY() + _i, cur.getX() + _j) == MapData::monster) {
+                            qDebug() << "character attack position";
+                            for (int _i = -attackRange; _i <= attackRange; ++_i) {
+                                for (int _j = -attackRange; _j <= attackRange; ++_j) {
+                                    if ((abs(_i) + abs(_j)) <= attackRange && inBound(Point2d(cur.getY() + _i, cur.getX() + _j)) && get(cur.getY() + _i, cur.getX() + _j) == MapData::monster) {
+                                        qDebug() << _i << _j;
                                         for (auto& mon: monsters) {
                                             if (mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
                                                 targetList.push_back(&mon);
@@ -499,6 +506,7 @@ void Gloomhaven::actionByAgile() {
                                     }
                                 }
                             }
+                            targetOptions.push_back("no attack");
                             bool targetOk;
                             QString targetResult;
                             do {
@@ -518,7 +526,7 @@ void Gloomhaven::actionByAgile() {
                                     dam = (dam < 0) ? 0 : dam;
                                     int remain = tar->setHp(-dam);
                                     qDebug() << "Damage:" << dam << " shield" << shield << " hp left: " << QString::number(tar->getHp());
-                                    info += QString(i.first) + " attack " + tar->getId() + " " + QString::number(dam) + " damage, " + tar->getId() + " shield " + QString::number(shield)
+                                    info += QString(i.first) + " attack " + tar->getId() + " " + QString::number(j.second) + " damage, " + tar->getId() + " shield " + QString::number(shield)
                                         + ", " + tar->getId() + " remain " + QString::number(remain) + " hp\n";
                                     if (remain <= 0) {
                                         qDebug() << tar->getId() << "killed";
@@ -556,140 +564,147 @@ void Gloomhaven::actionByAgile() {
                 characters[i.first-'A'].setHp(2);
             }
         } else if (i.first >= 'a' && i.first <= 'z') {
-            for (const auto& j: monsters[i.first-'a'].getSelected().getSkills()) {
-                if (j.first == "move") {
-                    Point2d cur = monsters[i.first-'a'].getPos();
-                    Point2d tmp(-1, -1);
-                    for (const auto& k: j.second) {
-                        if (k == 'w') {
-                            if (get(cur.getY() - 1, cur.getX()) == MapData::floor) {
-                                cur.setY(cur.getY() - 1);
-                            } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
-                                int x = cur.getX();
-                                int y = cur.getY() - 1;
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
+            if (monsters[i.first-'a'].getAlive()) {
+                for (const auto& j: monsters[i.first-'a'].getSelected().getSkills()) {
+                    if (j.first == "move") {
+                        Point2d cur = monsters[i.first-'a'].getPos();
+                        Point2d tmp(-1, -1);
+                        for (const auto& k: j.second) {
+                            if (k == 'w') {
+                                if (get(cur.getY() - 1, cur.getX()) == MapData::floor) {
                                     cur.setY(cur.getY() - 1);
+                                } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
+                                    int x = cur.getX();
+                                    int y = cur.getY() - 1;
+                                    auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                        return u.getPos().getX() == x && u.getPos().getY() == y;
+                                    });
+                                    if (it != monsters.end()) {
+                                        tmp = cur;
+                                        cur.setY(cur.getY() - 1);
+                                    }
                                 }
-                            }
-                        } else if (k == 's') {
-                            if (get(cur.getY() + 1, cur.getX()) == MapData::floor) {
-                                cur.setY(cur.getY() + 1);
-                            } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
-                                int x = cur.getX();
-                                int y = cur.getY() + 1;
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
+                            } else if (k == 's') {
+                                if (get(cur.getY() + 1, cur.getX()) == MapData::floor) {
                                     cur.setY(cur.getY() + 1);
+                                } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
+                                    int x = cur.getX();
+                                    int y = cur.getY() + 1;
+                                    auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                        return u.getPos().getX() == x && u.getPos().getY() == y;
+                                    });
+                                    if (it != monsters.end()) {
+                                        tmp = cur;
+                                        cur.setY(cur.getY() + 1);
+                                    }
                                 }
-                            }
-                        } else if (k == 'a') {
-                            if (get(cur.getY(), cur.getX() - 1) == MapData::floor) {
-                                cur.setX(cur.getX() - 1);
-                            } else if (get(cur.getY(), cur.getX() - 1) == MapData::obstacle) {
-                                int x = cur.getX() - 1;
-                                int y = cur.getY();
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
+                            } else if (k == 'a') {
+                                if (get(cur.getY(), cur.getX() - 1) == MapData::floor) {
                                     cur.setX(cur.getX() - 1);
+                                } else if (get(cur.getY(), cur.getX() - 1) == MapData::obstacle) {
+                                    int x = cur.getX() - 1;
+                                    int y = cur.getY();
+                                    auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                        return u.getPos().getX() == x && u.getPos().getY() == y;
+                                    });
+                                    if (it != monsters.end()) {
+                                        tmp = cur;
+                                        cur.setX(cur.getX() - 1);
+                                    }
                                 }
-                            }
-                        } else if (k == 'd') {
-                            if (get(cur.getY(), cur.getX() + 1) == MapData::floor) {
-                                cur.setX(cur.getX() + 1);
-                            } else if (get(cur.getY(), cur.getX() + 1) == MapData::obstacle) {
-                                int x = cur.getX() + 1;
-                                int y = cur.getY();
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
+                            } else if (k == 'd') {
+                                if (get(cur.getY(), cur.getX() + 1) == MapData::floor) {
                                     cur.setX(cur.getX() + 1);
-                                }
-                            }
-                        }
-                    }
-                    if (get(cur) == MapData::obstacle) {
-                       cur = tmp;
-                    }
-                    Map::data[monsters[i.first-'a'].getPos().getY()][monsters[i.first-'a'].getPos().getX()] = MapData::floor;
-                    monsters[i.first-'a'].setPos(cur);
-                } else if (j.first == "attack") {
-                    MonsterInfo minfo = monsters[i.first-'a'].getInfo();
-                    Point2d cur = monsters[i.first-'a'].getPos();
-                    std::vector<Character*> targetList;
-                    int range = minfo.attackRange == 0 ? 1 : minfo.attackRange;
-                    for (int _i = -range; _i <= range; ++_i) {
-                        for (int _j = -range; _j <= range; ++_j) {
-                            if (abs(_i + _j) == range && get(cur.getY() + _i, cur.getX() + _j) == MapData::character) {
-                                for (auto& ch: characters) {
-                                    if (ch.getPos().getY() == cur.getY() + _i && ch.getPos().getX() == cur.getX() + _j) {
-                                        targetList.push_back(&ch);
+                                } else if (get(cur.getY(), cur.getX() + 1) == MapData::obstacle) {
+                                    int x = cur.getX() + 1;
+                                    int y = cur.getY();
+                                    auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
+                                        return u.getPos().getX() == x && u.getPos().getY() == y;
+                                    });
+                                    if (it != monsters.end()) {
+                                        tmp = cur;
+                                        cur.setX(cur.getX() + 1);
                                     }
                                 }
                             }
                         }
-                    }
-                    // sort by distance ascending
-                    std::sort(targetList.begin(), targetList.end(), [&](Character* const& u, Character* const& v) {
-                        if (getRange(monsters[i.first-'a'].getPos(), u->getPos()) <= getRange(monsters[i.first-'a'].getPos(), v->getPos())) {
-                            return true;
-                        } else {
-                            return false;
+                        if (get(cur) == MapData::obstacle) {
+                           cur = tmp;
                         }
-                    });
-                    // check vision
-                    bool foundTarget = false;
-                    int foundIdx = 0;
-                    for (const auto& tar: targetList) {
-                        if (!invision(monsters[i.first-'a'].getPos(), tar->getPos())) {
-                            ++foundIdx;
-                            continue;
+                        Map::data[monsters[i.first-'a'].getPos().getY()][monsters[i.first-'a'].getPos().getX()] = MapData::floor;
+                        monsters[i.first-'a'].setPos(cur);
+                    } else if (j.first == "attack") {
+                        MonsterInfo minfo = monsters[i.first-'a'].getInfo();
+                        Point2d cur = monsters[i.first-'a'].getPos();
+                        std::vector<Character*> targetList;
+                        int range = minfo.attackRange == 0 ? 1 : minfo.attackRange;
+                        qDebug() << "attack position";
+                        for (int _i = -range; _i <= range; ++_i) {
+                            for (int _j = -range; _j <= range; ++_j) {
+                                if ((abs(_i) + abs(_j)) <= range && inBound(Point2d(cur.getY() + _i, cur.getX() + _j)) && get(cur.getY() + _i, cur.getX() + _j) == MapData::character) {
+                                    qDebug() << _i << _j;
+                                    for (auto& ch: characters) {
+                                        if (ch.getPos().getY() == cur.getY() + _i && ch.getPos().getX() == cur.getX() + _j) {
+                                            targetList.push_back(&ch);
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        foundTarget = true;
-                    }
-                    if (!foundTarget) {
-                        qDebug() << "no one lock in distance";
-                        info += "no one lock\n";
+                        // sort by distance ascending
+                        std::sort(targetList.begin(), targetList.end(), [&](Character* const& u, Character* const& v) {
+                            if (getRange(monsters[i.first-'a'].getPos(), u->getPos()) <= getRange(monsters[i.first-'a'].getPos(), v->getPos())) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        });
+                        // check vision
+                        bool foundTarget = false;
+                        int foundIdx = 0;
+                        for (const auto& tar: targetList) {
+                            if (!invision(monsters[i.first-'a'].getPos(), tar->getPos())) {
+                                ++foundIdx;
+                                continue;
+                            }
+                            foundTarget = true;
+                        }
+                        if (!foundTarget) {
+                            qDebug() << "no one lock in distance";
+                            info += "no one lock\n";
 
-                    } else {
-                        qDebug() << QString(i.first) << " lock " << targetList[foundIdx]->getId() << " in distance " << QString::number(getRange(monsters[i.first-'a'].getPos(), targetList[foundIdx]->getPos()));
-                        info += QString(i.first) + " lock " + targetList[foundIdx]->getId() + " in distance " + QString::number(getRange(monsters[i.first-'a'].getPos(), targetList[foundIdx]->getPos())) + "\n";
-                        int shield = targetList[foundIdx]->getShield();
-                        int dam = monsters[i.first-'a'].getRealAttack() - shield;
-                        dam = (dam < 0) ? 0 : dam;
-                        int remain = targetList[foundIdx]->setHp(-dam);
-                        qDebug() << "Damage:" << dam << " shield" << shield << " hp left: " << QString::number(targetList[foundIdx]->getHp());
-                        info += QString(i.first) + " attack " + targetList[foundIdx]->getId() + " " + QString::number(dam) + " damage, " + targetList[foundIdx]->getId() + " shield " + QString::number(shield)
-                            + ", " + targetList[foundIdx]->getId() + " remain " + QString::number(remain) + " hp\n";
-                        if (remain <= 0) {
-                            qDebug() << targetList[foundIdx]->getId() << "killed";
-                            info += targetList[foundIdx]->getId() + " is killed!!\n";
-                            targetList[foundIdx]->setAlive(false);
+                        } else {
+                            qDebug() << QString(i.first) << " lock " << targetList[foundIdx]->getId() << " in distance " << QString::number(getRange(monsters[i.first-'a'].getPos(), targetList[foundIdx]->getPos()));
+                            info += QString(i.first) + " lock " + targetList[foundIdx]->getId() + " in distance " + QString::number(getRange(monsters[i.first-'a'].getPos(), targetList[foundIdx]->getPos())) + "\n";
+                            int shield = targetList[foundIdx]->getShield();
+                            int dam = monsters[i.first-'a'].getRealAttack() - shield;
+                            dam = (dam < 0) ? 0 : dam;
+                            int remain = targetList[foundIdx]->setHp(-dam);
+                            qDebug() << "Damage:" << dam << " shield" << shield << " hp left: " << QString::number(targetList[foundIdx]->getHp());
+                            info += QString(i.first) + " attack " + targetList[foundIdx]->getId() + " " + QString::number(monsters[i.first-'a'].getRealAttack()) + " damage, " + targetList[foundIdx]->getId() + " shield " + QString::number(shield)
+                                + ", " + targetList[foundIdx]->getId() + " remain " + QString::number(remain) + " hp\n";
+                            if (remain <= 0) {
+                                qDebug() << targetList[foundIdx]->getId() << "killed";
+                                info += targetList[foundIdx]->getId() + " is killed!!\n";
+                                targetList[foundIdx]->setAlive(false);
+                            }
                         }
+                    } else if (j.first == "heal") {
+                        int r = monsters[i.first-'a'].healHp(j.second.toInt());
+                        info += QString(i.first) + " heal " + j.second + ", now hp is " + QString::number(r) + "\n";
+                    } else if (j.first == "shield") {
+                        monsters[i.first-'a'].setShield(j.second.toInt());
+                        info += QString(i.first) + " shield " + j.second + " this turn" + "\n";
                     }
-                } else if (j.first == "heal") {
-                    int r = monsters[i.first-'a'].healHp(j.second.toInt());
-                    info += QString(i.first) + " heal " + j.second + ", now hp is " + QString::number(r) + "\n";
-                } else if (j.first == "shield") {
-                    monsters[i.first-'a'].setShield(j.second.toInt());
-                    info += QString(i.first) + " shield " + j.second + " this turn" + "\n";
                 }
+                monsters[i.first-'a'].disableActionCard();
             }
-            monsters[i.first-'a'].disableActionCard();
         }
         showMap();
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + info);
+//        ui->labelBattleInfo->setVerticalScrollBar(
+//        ui->labelBattleInfo->verticalScrollBar(
+//                        ui->labelBattleInfo->verticalScrollBar()->maximum());
     }
     for (auto& i: monsters) {
         if (i.getOnCourt() && i.getSelected().getReDeal()) {
@@ -717,6 +732,39 @@ void Gloomhaven::cleanStatus() {
                 j.second = true;
             }
         }
+    }
+    bool mWin = true, cWin = true;
+    for (const auto& i: monsters) {
+        if (i.getOnCourt() && i.getAlive()) {
+            cWin = false;
+        }
+    }
+    for (const auto& i: characters) {
+        if (i.getAlive()) {
+            mWin = false;
+        }
+    }
+    if (cWin) {
+        // if all doors open
+        bool check = true;
+        for (int i = 0; i < row; ++i) {
+            for (int j = 0; j < col; ++j) {
+                if (get(i, j) == MapData::door) {
+                    check = false;
+                }
+            }
+        }
+        if (check) {
+            // true -> c wins
+            ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "characters win\n");
+        } else {
+            // false -> open doors
+            openDoor = true;
+            showMap();
+            openDoor = false;
+        }
+    } else if (mWin) {
+        ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monsters win\n");
     }
 }
 

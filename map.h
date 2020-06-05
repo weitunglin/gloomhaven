@@ -50,6 +50,7 @@ protected:
     std::vector<Character> characters;
     std::vector<Monster> monsters;
     int t = 0;
+    bool openDoor;
     void startPosSelectable();
 
 signals:
