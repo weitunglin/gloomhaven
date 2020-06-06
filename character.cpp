@@ -155,3 +155,15 @@ void Character::setAlive(bool b) {
 bool Character::getAlive() const {
     return alive;
 }
+
+std::vector<CharacterSkill> Character::getCards() const {
+    return cards;
+}
+
+CharacterSkill Character::getCard(int i) const {
+    if (i >= 0 && i < (int)cards.size()) {
+        return cards[i];
+    } else {
+        return CharacterSkill();
+    }
+}

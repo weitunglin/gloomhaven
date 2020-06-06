@@ -60,7 +60,8 @@ public:
     void monsterPrepare();
     void actionByAgile();
     void cleanStatus();
-    void checkGameStatus(); 
+    void checkGameStatus();
+    void updateStatus();
 
 protected:
     Ui::Gloomhaven *ui;
@@ -82,6 +83,8 @@ public slots:
 //    void handleSelectActions();
     void on_confirmButton_released();
     void scrollChanged();
+private slots:
+    void on_confirmButton_2_released();
 };
 
 #endif // GLOOMHAVEN_H

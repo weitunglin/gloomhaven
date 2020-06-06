@@ -21,6 +21,7 @@ public:
     int getAgile() const;
     Action getUp() const;
     Action getDown() const;
+    QString getInfo() const;
 
 private:
     bool available;

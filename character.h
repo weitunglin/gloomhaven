@@ -48,6 +48,8 @@ public:
     QString getId() const;
     void setAlive(bool b);
     bool getAlive() const;
+    std::vector<CharacterSkill> getCards() const;
+    CharacterSkill getCard(int i) const;
 
 private:
     QString characterName;

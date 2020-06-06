@@ -5,6 +5,8 @@ Gloomhaven::Gloomhaven(QWidget *parent) :
     ui->setupUi(this);
     ui->graphicsView->setAlignment(Qt::AlignAbsolute);
     ui->confirmButton->hide();
+    ui->confirmButton_2->hide();
+    ui->labelStatus->hide();
     ui->listWidget->hide();
     ui->labelBattleInfo->hide();
     ui->labelBattleInfo->setText("");
@@ -344,6 +346,7 @@ void Gloomhaven::characterPrepare() {
     // (actions) => monster: a skill
     // step5: 結算 (check the dead condition, see if door's open, ... so on)
     // map->characters[0].attack(5, 3, map->monster);
+    cleanStatus();
     ui->labelBattleInfo->show();
     t2 = 0;
     selectAction(t2);
@@ -375,13 +378,13 @@ void Gloomhaven::monsterPrepare() {
             ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster " + QString((int)i + 'a') + " picked no." + QString::number(seen[monsters[i].getName()].value) + " card\n");
         }
     }
-    cleanStatus();
     actionByAgile();
 }
 
 void Gloomhaven::actionByAgile() {
     ui->labelInstruction->setText("do actions by agile");
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "round: " + QString::number(++round) + "\n");
+
     // sort
     std::vector<std::pair<char, int>> list;
     for (size_t i = 0; i < characters.size(); ++i) {
@@ -428,6 +431,7 @@ void Gloomhaven::actionByAgile() {
     QInputDialog *inputDialog = new QInputDialog(this);
     inputDialog->adjustSize();
     for (const auto& i: list) {
+        updateStatus();
         QString info;
         if (i.first >= 'A' && i.first <= 'Z') {
             if (characters[i.first-'A'].getStatus() && characters[i.first-'A'].getAlive()) {
@@ -541,7 +545,7 @@ void Gloomhaven::actionByAgile() {
                             int healAmount = characters[i.first-'A'].setHp(j.second);
                             info += QString(i.first) + " heal " + QString::number(j.second) + ", now hp is " + QString::number(healAmount) + "\n";
                         } else if (j.first == "shield") {
-                            characters[i.first-'A'].setShield(j.second);
+                            characters[i.first-'A'].setShield(characters[i.first-'A'].getShield() + j.second);
                             info += QString(i.first) + " shield " + QString::number(j.second) + " this turn" + "\n";
                         }
                     }
@@ -694,7 +698,7 @@ void Gloomhaven::actionByAgile() {
                         int r = monsters[i.first-'a'].healHp(j.second.toInt());
                         info += QString(i.first) + " heal " + j.second + ", now hp is " + QString::number(r) + "\n";
                     } else if (j.first == "shield") {
-                        monsters[i.first-'a'].setShield(j.second.toInt());
+                        monsters[i.first-'a'].setShield(monsters[i.first-'a'].getShield() + j.second.toInt());
                         info += QString(i.first) + " shield " + j.second + " this turn" + "\n";
                     }
                 }
@@ -704,9 +708,6 @@ void Gloomhaven::actionByAgile() {
         showMap();
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + info);
         ui->labelBattleInfo->verticalScrollBar();
-//        ui->labelBattleInfo->setVerticalScrollBar(
-//        ui->labelBattleInfo->verticalScrollBar(
-//                        ui->labelBattleInfo->verticalScrollBar()->maximum());
     }
     for (auto& i: monsters) {
         if (i.getOnCourt() && i.getSelected().getReDeal()) {
@@ -720,21 +721,6 @@ void Gloomhaven::actionByAgile() {
 
 void Gloomhaven::checkGameStatus() {
     // check if character win or if monster win -> open new game
-    characterPrepare();
-}
-
-void Gloomhaven::cleanStatus() {
-    for (auto &i: characters) {
-        i.setShield(0);
-    }
-    for (auto &i: monsters) {
-        if (i.getOnCourt() && i.getSelected().getReDeal()) {
-            i.setShield(0);
-            for (auto &j : i.getInHands()) {
-                j.second = true;
-            }
-        }
-    }
     bool mWin = true, cWin = true;
     for (const auto& i: monsters) {
         if (i.getOnCourt() && i.getAlive()) {
@@ -764,10 +750,28 @@ void Gloomhaven::cleanStatus() {
             openDoor = true;
             showMap();
             openDoor = false;
+            characterPrepare();
         }
     } else if (mWin) {
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monsters win\n");
+    } else {
+        characterPrepare();
     }
+}
+
+void Gloomhaven::cleanStatus() {
+    for (auto &i: characters) {
+        i.setShield(0);
+    }
+    for (auto &i: monsters) {
+        if (i.getOnCourt() && i.getSelected().getReDeal()) {
+            i.setShield(0);
+            for (auto &j : i.getInHands()) {
+                j.second = true;
+            }
+        }
+    }
+    updateStatus();
 }
 
 void Gloomhaven::selectAction(int i) {
@@ -786,6 +790,7 @@ void Gloomhaven::selectAction(int i) {
         font.setStrikeOut(true);
         rest->setFont(font);
         rest->setFlags(rest->flags() & ~Qt::ItemFlag::ItemIsSelectable);
+    } else {
         die = false;
     }
     ui->listWidget->insertItem(0, rest);
@@ -793,11 +798,13 @@ void Gloomhaven::selectAction(int i) {
         if (card.second == true) {
             die = false;
             qDebug() << "+" << card.first;
-            QListWidgetItem *i = new QListWidgetItem(QString::number(card.first));
+            QString s = QString(QString::number(card.first) + " " + QString(characters[i].getCard(card.first).getInfo()));
+            QListWidgetItem *i = new QListWidgetItem(s);
             items.push_back(i);
         } else {
             qDebug() << "-" << card.first;
-            QListWidgetItem *i = new QListWidgetItem(QString::number(card.first));
+            QString s = QString(QString::number(card.first) + " " + QString(characters[i].getCard(card.first).getInfo()));
+            QListWidgetItem *i = new QListWidgetItem(s);
             QFont font;
             font.setStrikeOut(true);
             i->setFont(font);
@@ -808,6 +815,7 @@ void Gloomhaven::selectAction(int i) {
     if (die) {
         // no option then die
         characters[i].setAlive(false);
+        showMap();
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "Character " + QString(i+'A') + " killed\n");
         if (++t2 < (int)characters.size()) {
             selectAction(t2);
@@ -832,6 +840,9 @@ void Gloomhaven::selectAction(int i) {
     ui->confirmButton->show();
     ui->confirmButton->activateWindow();
     ui->confirmButton->raise();
+//    ui->confirmButton_2->show();
+//    ui->confirmButton_2->activateWindow();
+//    ui->confirmButton_2->raise();
 }
 
 void Gloomhaven::selectedChange() {
@@ -846,8 +857,8 @@ void Gloomhaven::selectedChange() {
             ui->labelInstruction->setText("START GAME!");
             disconnect(ui->graphicsView->scene(), SIGNAL(selectionChanged()), this, SLOT(selectedChange()));
             ui->graphicsView->scene()->clearSelection();
+            ui->labelStatus->show();
             showMap();
-            cleanStatus();
             characterPrepare();
         }
     }
@@ -881,7 +892,7 @@ void Gloomhaven::on_confirmButton_released()
     }
     QString s;
     for (int i = 0; i < list.size(); ++i) {
-        s += list[i]->text() + " ";
+        s += list[i]->text().split(" ")[0] + " ";
     }
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "Character " + QString(t2 + 'A') + " selected " + s + "\n");
     characters[t2].setSelected(s);
@@ -920,6 +931,22 @@ void Gloomhaven::on_confirmButton_released()
     }
 }
 
+void Gloomhaven::updateStatus() {
+    // status
+    QString text;
+    for (const auto& i: characters) {
+        if (i.getAlive()) {
+            text += i.getId() + "-hp: " + QString::number(i.getHp()) + ", shield: " + QString::number(i.getShield()) + "\n";
+        }
+    }
+    for (const auto& i: monsters) {
+        if (i.getAlive() && i.getOnCourt()) {
+            text += i.getId() + "-hp: " + QString::number(i.getHp()) + ", shield: " + QString::number(i.getShield()) + "\n";
+        }
+    }
+    ui->labelStatus->setText(text);
+}
+
 int Gloomhaven::isCharacter(char c) const {
     return (c >= 'A' && c <= 'Z');
 }
@@ -929,4 +956,8 @@ void Gloomhaven::scrollChanged() {
     QTextCursor textCursor = ui->labelBattleInfo->textCursor();
     textCursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor,1);
     ui->labelBattleInfo->setTextCursor(textCursor);
+}
+
+void Gloomhaven::on_confirmButton_2_released() {
+
 }

@@ -17,16 +17,15 @@ typedef struct monsterInfo {
 } MonsterInfo;
 
 
-class Monster : public QObject
+class Monster
 {
 enum class MonsterStatus {
     noshow = 0,
     normal = 1,
     elite = 2
 };
-    Q_OBJECT
 public:
-    explicit Monster(QObject *parent = nullptr);
+    Monster();
     Monster(const Monster& rhs);
     friend QTextStream& operator>>(QTextStream& f, Monster& rhs);
     QString getName() const;

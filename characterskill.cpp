@@ -49,3 +49,7 @@ Action CharacterSkill::getUp() const {
 Action CharacterSkill::getDown() const {
     return down;
 }
+
+QString CharacterSkill::getInfo() const {
+    return up.toString() + "+" + down.toString();
+}

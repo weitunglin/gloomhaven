@@ -1,16 +1,16 @@
 #include "monster.h"
 
-Monster::Monster(QObject *parent) : QObject(parent), pos(-1, -1)
+Monster::Monster() : pos(-1, -1)
 {
 }
 
-Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), id(rhs.id), hp(rhs.hp), shield(rhs.shield), twoCharacters(rhs.twoCharacters), threeCharacters(rhs.threeCharacters), fourCharacters(rhs.fourCharacters), type(rhs.type), pos(rhs.pos), onCourt(false), alive(rhs.alive) {
+Monster::Monster(const Monster& rhs) : monsterName(rhs.monsterName), id(rhs.id), hp(rhs.hp), shield(rhs.shield), twoCharacters(rhs.twoCharacters), threeCharacters(rhs.threeCharacters), fourCharacters(rhs.fourCharacters), type(rhs.type) ,info(rhs.info), pos(rhs.pos), onCourt(false), alive(rhs.alive) {
     for (size_t i = 0; i < rhs.cards.size(); ++i) {
         cards.push_back(MonsterSkill(rhs.cards[i]));
     }
-    for (size_t i = 0; i < rhs.info.size(); ++i) {
-        info.push_back(MonsterInfo{rhs.info[i].maxHp, rhs.info[i].attackDamage, rhs.info[i].attackRange});
-    }
+//    for (size_t i = 0; i < rhs.info.size(); ++i) {
+//        info.push_back(MonsterInfo{rhs.info[i].maxHp, rhs.info[i].attackDamage, rhs.info[i].attackRange});
+//    }
 }
 
 QTextStream& operator>>(QTextStream& f, Monster& rhs) {
