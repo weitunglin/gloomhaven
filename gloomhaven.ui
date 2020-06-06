@@ -72,7 +72,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QTextBrowser" name="labelBattleInfo">
+   <widget class="QTextEdit" name="labelBattleInfo">
     <property name="geometry">
      <rect>
       <x>350</x>

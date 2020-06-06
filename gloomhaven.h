@@ -81,6 +81,7 @@ public slots:
     void nothing();
 //    void handleSelectActions();
     void on_confirmButton_released();
+    void scrollChanged();
 };
 
 #endif // GLOOMHAVEN_H

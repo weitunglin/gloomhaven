@@ -8,6 +8,7 @@ Gloomhaven::Gloomhaven(QWidget *parent) :
     ui->listWidget->hide();
     ui->labelBattleInfo->hide();
     ui->labelBattleInfo->setText("");
+    QObject::connect(ui->labelBattleInfo, SIGNAL(textChanged()), this, SLOT(scrollChanged()));
     round = 0;
 }
 
@@ -425,7 +426,7 @@ void Gloomhaven::actionByAgile() {
     }
     ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + s);
     QInputDialog *inputDialog = new QInputDialog(this);
-    inputDialog->setGeometry(300, 500, 200, 150);
+    inputDialog->adjustSize();
     for (const auto& i: list) {
         QString info;
         if (i.first >= 'A' && i.first <= 'Z') {
@@ -510,7 +511,7 @@ void Gloomhaven::actionByAgile() {
                             bool targetOk;
                             QString targetResult;
                             do {
-                                targetResult = inputDialog->getItem(this, "Select A Target For Character " + QString(i.first) + " To Attack", "Valid Targets: ", targetOptions, 0, false, &targetOk);
+                                targetResult = inputDialog->getItem(this, "Select A Target For Character " + QString(i.first) + " To Attack", "Valid Targets: ", targetOptions, 0, false, &targetOk, inputDialog->windowFlags());
                             } while (!targetOk);
                             if (targetResult == "no attack") {
                                 info += "Character " + QString(i.first) + " give up attack\n";
@@ -558,7 +559,7 @@ void Gloomhaven::actionByAgile() {
                     }
                 }
                 do {
-                    result = inputDialog->getItem(this, "Select Card To Get Deleted For Character " + QString(i.first), "Cards: ", options, 0, false, &ok);
+                    result = inputDialog->getItem(this, "Select Card To Get Deleted For Character " + QString(i.first), "Cards: ", options, 0, false, &ok, inputDialog->windowFlags());
                 } while (!ok);
                 qDebug() << "card" << result.toInt() << "gonna be deleted";
                 characters[i.first-'A'].setHp(2);
@@ -702,6 +703,7 @@ void Gloomhaven::actionByAgile() {
         }
         showMap();
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + info);
+        ui->labelBattleInfo->verticalScrollBar();
 //        ui->labelBattleInfo->setVerticalScrollBar(
 //        ui->labelBattleInfo->verticalScrollBar(
 //                        ui->labelBattleInfo->verticalScrollBar()->maximum());
@@ -920,4 +922,11 @@ void Gloomhaven::on_confirmButton_released()
 
 int Gloomhaven::isCharacter(char c) const {
     return (c >= 'A' && c <= 'Z');
+}
+
+void Gloomhaven::scrollChanged() {
+    qDebug() << "label battle changed";
+    QTextCursor textCursor = ui->labelBattleInfo->textCursor();
+    textCursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor,1);
+    ui->labelBattleInfo->setTextCursor(textCursor);
 }
