@@ -22,6 +22,7 @@ void Gloomhaven::setFileData(QString cFilename, QString mFilename, int mode) {
     characterFilename = cFilename;
     monsterFilename = mFilename;
     debugMode = mode;
+    qDebug() << "debug mode" << mode << endl;
     /* process character file input */
     QFile characterFile(":/files/" + characterFilename);
     trace(characterFilename.toStdString());
@@ -388,18 +389,30 @@ void Gloomhaven::monsterPrepare() {
     std::uniform_int_distribution<int> dis(0, 5);
     qDebug() << "random";
     for (size_t i = 0; i < monsters.size(); ++i) {
-        if (seen[monsters[i].getName()].value == -1) {
-            int rnd;
-            do {
-                rnd = dis(gen);
-            } while (monsters[i].getInHands()[rnd]);
-            seen[monsters[i].getName()].value = rnd;
-            qDebug() << monsters[i].getName() << seen[monsters[i].getName()].value;
-        }
-        if (monsters[i].getOnCourt()) {
-            monsters[i].getInHands()[seen[monsters[i].getName()].value] = false;
-            monsters[i].setSelected(seen[monsters[i].getName()].value);
-            ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster " + QString((int)i + 'a') + " picked no." + QString::number(seen[monsters[i].getName()].value) + " card\n");
+        if (debugMode) {
+            if (monsters[i].getOnCourt() && monsters[i].getAlive()) {
+                int idx = 0;
+                while (!monsters[i].getInHands()[idx] && idx < 6) ++idx;
+                if (idx == 6) {
+                    idx = 0;
+                    qDebug() << "no redeal found";
+                }
+                monsters[i].setSelected(idx);
+                monsters[i].getInHands()[idx] = false;
+                ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster " + QString((int)i + 'a') + " picked no." + QString::number(idx) + " card\n");
+            }
+        } else {
+            if (seen[monsters[i].getName()].value == -1) {
+                int rnd = dis(gen);;
+                while (!monsters[i].getInHands()[rnd]) rnd = dis(gen);
+                seen[monsters[i].getName()].value = rnd;
+                qDebug() << monsters[i].getName() << seen[monsters[i].getName()].value;
+            }
+            if (monsters[i].getOnCourt()) {
+                monsters[i].setSelected(seen[monsters[i].getName()].value);
+                monsters[i].getInHands()[seen[monsters[i].getName()].value] = false;
+                ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monster " + QString((int)i + 'a') + " picked no." + QString::number(seen[monsters[i].getName()].value) + " card\n");
+            }
         }
     }
     actionByAgile();
@@ -490,7 +503,7 @@ void Gloomhaven::actionByAgile() {
                             QString result;
                             bool movementOk;
                             do {
-                                result = inputDialog->getText(this, "Enter Move Instruction For Character " + QString(i.first), "Move Instruction (" + QString::number(j.second) + " steps): ", QLineEdit::Normal, "wsad", &movementOk);
+                                result = inputDialog->getText(this, "Enter Move Instruction For Character " + QString(i.first), "Move Instruction (" + QString::number(j.second) + " steps): ", QLineEdit::Normal, "", &movementOk);
                                 result = result.toLower();
                                 if (result.length() > j.second || (result.length() && !validMove(characters[i.first-'A'].getPos(), result))) {
                                     movementOk = false;
@@ -741,6 +754,7 @@ void Gloomhaven::actionByAgile() {
     }
     for (auto& i: monsters) {
         if (i.getOnCourt() && i.getSelected().getReDeal()) {
+            qDebug() << "redeal" << " monster " << i.getId();
             for (auto& j: i.getInHands()) {
                 j.second = true;
             }
@@ -776,6 +790,7 @@ void Gloomhaven::checkGameStatus() {
             // true -> character wins
             ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "characters win\n");
             emit endGame("character win~");
+            return;
         } else {
             // false -> open doors
             for (int i = 0; i < row; ++i) {
@@ -787,17 +802,29 @@ void Gloomhaven::checkGameStatus() {
                         if (it != characters.end()) {
                             openDoor = true;
                             showMap();
+                            bool mcheck = true;
+                            for (const auto& i: monsters) {
+                                if (i.getOnCourt() && i.getAlive()) {
+                                    mcheck = false;
+                                }
+                            }
+                            if (mcheck) {
+                                ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "characters win\n");
+                                emit endGame("character win~");
+                                return;
+                            }
                             openDoor = false;
                         }
                     }
                 }
             }
-            checkGameStatus();
+            characterPrepare();
         }
     } else if (mWin) {
         // monster wins
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "monsters win\n");
         emit endGame("monster win~");
+        return;
     } else {
         characterPrepare();
     }

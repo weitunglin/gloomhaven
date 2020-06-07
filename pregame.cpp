@@ -32,7 +32,7 @@ void PreGame::on_playButton_clicked()
             ui->textMonsterData->setText("monster1.txt");
             std::cout << "ok, start game" << std::endl;
             connect(game, SIGNAL(endGame(QString)), this, SLOT(restartGame(QString)));
-            game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text());
+            game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text(), ui->inputDebugMode->value());
             game->showMap();
             game->show();
             game->start();
@@ -46,7 +46,7 @@ void PreGame::on_playButton_clicked()
         ui->textMonsterData->setText("monster1.txt");
         std::cout << "ok, start game" << std::endl;
         connect(game, SIGNAL(endGame(QString)), this, SLOT(restartGame(QString)));
-        game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text());
+        game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text(), ui->inputDebugMode->value());
         game->showMap();
         game->show();
         game->start();
@@ -62,11 +62,8 @@ void PreGame::on_exitButton_clicked()
 
 void PreGame::restartGame(QString result) {
     game->hide();
-    delete game;
-    game = new Gloomhaven(nullptr);
     ui->welcomeText->setText(result);
     this->show();
     ui->textCharacterData->setText("character1.txt");
     ui->textMonsterData->setText("monster1.txt");
-    ui->labelDebugMode->setNum(0);
 }
