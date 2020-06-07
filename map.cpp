@@ -86,20 +86,31 @@ bool Map::validMove(Point2d p, const QString &s) const {
     int x = p.getX(), y = p.getY();
     for (const auto& i: s) {
         if (i == 'w') {
-            if (data[y-1][x] != MapData::floor) return false;
+            if (data[y-1][x] == MapData::monster || data[y-1][x] == MapData::wall || data[y-1][x] == MapData::obstacle) return false;
             --y;
         } else if (i == 's') {
-            if (data[y+1][x] != MapData::floor) return false;
+            if (data[y+1][x] == MapData::monster || data[y+1][x] == MapData::wall || data[y+1][x] == MapData::obstacle) return false;
             ++y;
         } else if (i == 'a') {
-            if (data[y][x-1] != MapData::floor) return false;
+            if (data[y][x-1] == MapData::monster || data[y][x-1] == MapData::wall || data[y][x-1] == MapData::obstacle) return false;
             --x;
         } else if (i == 'd') {
-            if (data[y][x+1] != MapData::floor) return false;
+            if (data[y][x+1] == MapData::monster || data[y][x+1] == MapData::wall || data[y][x+1] == MapData::obstacle) return false;
             ++x;
         }
     }
-    return true;
+    if (data[y][x] != MapData::floor && data[y][x] != MapData::door) {
+        return false;
+    } else {
+        auto c = std::find_if(characters.begin(), characters.end(), [=](const Character& u) {
+            return u.getPos() == Point2d(y, x);
+        });
+        if (c == characters.end()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 bool Map::invision(const Point2d &p1, const Point2d &p2) const {

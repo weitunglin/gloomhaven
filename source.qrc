@@ -3,6 +3,7 @@
         <file>map_door.jpg</file>
         <file>map_floor_with_start.jpg</file>
         <file>map_floor.jpg</file>
+        <file>map_obstable.png</file>
     </qresource>
     <qresource prefix="/files">
         <file>character1.txt</file>

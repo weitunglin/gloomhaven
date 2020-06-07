@@ -20,8 +20,10 @@ public:
 
 private slots:
     void on_playButton_clicked();
-
     void on_exitButton_clicked();
+
+public slots:
+    void restartGame(QString result);
 
 private:
     Ui::PreGame *ui;

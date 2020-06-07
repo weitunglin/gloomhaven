@@ -73,9 +73,12 @@ protected:
     QString mapFilename;
     int debugMode;
     int monsterAmount;
-    int t2;
+    int t2; // count for select action
     int round;
     int isCharacter(char c) const;
+
+signals:
+    void endGame(QString s);
 
 public slots:
     void selectedChange();
@@ -83,6 +86,7 @@ public slots:
 //    void handleSelectActions();
     void on_confirmButton_released();
     void scrollChanged();
+
 private slots:
     void on_confirmButton_2_released();
 };

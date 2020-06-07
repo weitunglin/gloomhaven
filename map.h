@@ -49,7 +49,7 @@ protected:
     int characterAmountOnCourt;
     std::vector<Character> characters;
     std::vector<Monster> monsters;
-    int t = 0;
+    int t = 0; // count for start position selection
     bool openDoor;
     void startPosSelectable();
 

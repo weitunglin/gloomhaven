@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
     darkPalette.setColor(QPalette::ToolTipText, Qt::white);
 
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; } QLineEdit, QPushButton { color: black; } QMessageBox { color: black; } ");
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; } QLineEdit, QPushButton { background: darkGray; color: white; } QMessageBox { color: black; } ");
     qApp->setPalette(darkPalette);
 //    MainWindow w;
 //    w.show();
