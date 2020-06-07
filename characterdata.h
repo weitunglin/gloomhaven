@@ -12,7 +12,6 @@ class CharacterData
 {
 public:
     CharacterData();
-    friend QTextStream& operator>>(QTextStream& f, CharacterData& rhs);
 
 protected:
     int characterAmount;

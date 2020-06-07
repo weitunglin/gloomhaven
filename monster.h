@@ -55,8 +55,8 @@ public:
 private:
     QString monsterName;
     QString id;
-    MonsterInfo normal;
-    MonsterInfo elite;
+//    MonsterInfo normal;
+//    MonsterInfo elite;
     int hp;
     int shield;
     int twoCharacters;

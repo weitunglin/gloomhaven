@@ -16,7 +16,6 @@ public:
     CharacterSkill();
     CharacterSkill(const CharacterSkill& rhs);
     friend QTextStream& operator>>(QTextStream& f, CharacterSkill& rhs);
-    void setUp(QString s);
     int getCardId() const;
     int getAgile() const;
     Action getUp() const;
@@ -24,7 +23,6 @@ public:
     QString getInfo() const;
 
 private:
-    bool available;
     int cardId;
     int agile;
     Action up;
