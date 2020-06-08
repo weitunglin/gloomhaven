@@ -542,7 +542,7 @@ void Gloomhaven::actionByAgile() {
                                     if ((abs(_i) + abs(_j)) <= attackRange && inBound(Point2d(cur.getY() + _i, cur.getX() + _j)) && get(cur.getY() + _i, cur.getX() + _j) == MapData::monster) {
 //                                        qDebug() << _i << _j;
                                         for (auto& mon: monsters) {
-                                            if (mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
+                                            if (mon.getAlive() && mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
                                                 targetList.push_back(&mon);
                                                 targetOptions.push_back(mon.getId());
                                             }

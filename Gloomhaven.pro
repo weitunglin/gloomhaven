@@ -44,7 +44,6 @@ HEADERS += \
 
 FORMS += \
     gloomhaven.ui \
-    mainwindow.ui \
     pregame.ui
 
 # Default rules for deployment.

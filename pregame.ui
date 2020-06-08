@@ -167,7 +167,6 @@ p, li { white-space: pre-wrap; }
    <zorder>labelDebugMode</zorder>
    <zorder>inputDebugMode</zorder>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

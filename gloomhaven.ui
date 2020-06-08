@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>700</height>
+    <height>750</height>
    </rect>
   </property>
   <property name="font">
@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Gloomhaven</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGraphicsView" name="graphicsView">
@@ -44,7 +44,7 @@
       <x>0</x>
       <y>600</y>
       <width>130</width>
-      <height>100</height>
+      <height>150</height>
      </rect>
     </property>
     <property name="text">
@@ -61,7 +61,7 @@
     <property name="geometry">
      <rect>
       <x>750</x>
-      <y>650</y>
+      <y>710</y>
       <width>50</width>
       <height>30</height>
      </rect>
@@ -76,7 +76,7 @@
       <x>530</x>
       <y>600</y>
       <width>220</width>
-      <height>100</height>
+      <height>150</height>
      </rect>
     </property>
    </widget>
@@ -86,7 +86,7 @@
       <x>270</x>
       <y>600</y>
       <width>260</width>
-      <height>100</height>
+      <height>150</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -118,7 +118,7 @@
       <x>130</x>
       <y>600</y>
       <width>140</width>
-      <height>100</height>
+      <height>150</height>
      </rect>
     </property>
     <property name="text">
