@@ -64,6 +64,8 @@ void PreGame::restartGame(QString result) {
     game->hide();
     game = new Gloomhaven(nullptr);
     ui->welcomeText->setText(result);
+    ui->welcomeText->selectAll();
+    ui->welcomeText->setAlignment(Qt::AlignCenter);
     this->show();
     ui->textCharacterData->setText("character1.txt");
     ui->textMonsterData->setText("monster1.txt");
