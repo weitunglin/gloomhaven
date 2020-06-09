@@ -1,4 +1,5 @@
 #include "gloomhaven.h"
+#include "main.cpp"
 
 Gloomhaven::Gloomhaven(QWidget *parent) :
     QMainWindow(parent), CharacterData(), MonsterData(), Map(), ui(new Ui::Gloomhaven) {
@@ -24,7 +25,7 @@ void Gloomhaven::setFileData(QString cFilename, QString mFilename, int mode) {
     debugMode = mode;
     qDebug() << "debug mode" << mode << endl;
     /* process character file input */
-    QFile characterFile(":/files/" + characterFilename);
+    QFile characterFile(appPath + "/" + characterFilename);
     trace(characterFilename.toStdString());
     if (characterFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "open file " << characterFilename << endl;
@@ -39,7 +40,7 @@ void Gloomhaven::setFileData(QString cFilename, QString mFilename, int mode) {
     }
     characterFile.close();
     /* process monster file input */
-    QFile monsterFile(":/files/" + monsterFilename);
+    QFile monsterFile(appPath + "/" + monsterFilename);
     trace(monsterFilename.toStdString());
     if (monsterFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "open file " << monsterFilename << endl;
@@ -336,7 +337,7 @@ void Gloomhaven::preGameInput() {
         qDebug() << mapData << endl;
         mapFilename = mapData;
     }
-    QFile file(":/files/" + mapFilename);
+    QFile file(appPath + "/" + mapFilename);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "open file " << mapFilename << endl;
         QTextStream f(&file);

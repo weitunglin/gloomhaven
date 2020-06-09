@@ -2,6 +2,10 @@
 
 #include <QApplication>
 #include <QStyleFactory>
+#include <QDebug>
+#include <QString>
+
+QString appPath;
 
 int main(int argc, char *argv[])
 {
@@ -39,5 +43,7 @@ int main(int argc, char *argv[])
 //    w.show();
     PreGame window1;
     window1.show();
+    qDebug() << a.applicationDirPath();
+    appPath = a.applicationDirPath();
     return a.exec();
 }
