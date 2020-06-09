@@ -44,7 +44,7 @@ protected:
     int col;
     std::vector<std::vector<MapData>> data;
     std::vector<Point2d> startPos;
-    bool inBound(const Point2d& p);
+    bool inBound(const Point2d& p) const;
     bool visible(const Point2d& p);
     int characterAmountOnCourt;
     std::vector<Character> characters;

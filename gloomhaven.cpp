@@ -548,9 +548,10 @@ void Gloomhaven::actionByAgile() {
 //                            qDebug() << "character attack position";
                             for (int _i = -attackRange; _i <= attackRange; ++_i) {
                                 for (int _j = -attackRange; _j <= attackRange; ++_j) {
-                                    if ((abs(_i) + abs(_j)) <= attackRange && inBound(Point2d(cur.getY() + _i, cur.getX() + _j)) && get(cur.getY() + _i, cur.getX() + _j) == MapData::monster) {
+                                    if ((abs(_i) + abs(_j)) <= attackRange && inBound(Point2d(cur.getY() + _i, cur.getX() + _j)) && get(cur.getY() + _i, cur.getX() + _j) == MapData::monster && invision(cur, Point2d(cur.getY() + _i, cur.getX() + _j))) {
 //                                        qDebug() << _i << _j;
                                         for (auto& mon: monsters) {
+                                            // find which monster is it
                                             if (mon.getAlive() && mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
                                                 targetList.push_back(&mon);
                                                 targetOptions.push_back(mon.getId());
@@ -696,8 +697,10 @@ void Gloomhaven::actionByAgile() {
                     }
                     // sort by distance ascending
                     std::sort(targetList.begin(), targetList.end(), [&](Character* const& u, Character* const& v) {
-                        if (getRange(monsters[i.first-'a'].getPos(), u->getPos()) <= getRange(monsters[i.first-'a'].getPos(), v->getPos())) {
+                        if (getRange(monsters[i.first-'a'].getPos(), u->getPos()) < getRange(monsters[i.first-'a'].getPos(), v->getPos())) {
                             return true;
+                        } else if (getRange(monsters[i.first-'a'].getPos(), u->getPos()) == getRange(monsters[i.first-'a'].getPos(), v->getPos())) {
+                            return u->getActionAgile() < v->getActionAgile();
                         } else {
                             return false;
                         }
