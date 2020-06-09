@@ -62,6 +62,7 @@ void PreGame::on_exitButton_clicked()
 
 void PreGame::restartGame(QString result) {
     game->hide();
+    game = new Gloomhaven(nullptr);
     ui->welcomeText->setText(result);
     this->show();
     ui->textCharacterData->setText("character1.txt");

@@ -450,6 +450,15 @@ void Gloomhaven::actionByAgile() {
                     }
                 }
             }
+            if (!isCharacter(list[i].first) && !isCharacter(list[j].first)) {
+                if (monsters[list[i].first - 'a'].getType() > monsters[list[j].first - 'a'].getType()) {
+                    std::swap(list[i], list[j]);
+                } else {
+                    if (list[i].first < list[j].first) {
+                        std::swap(list[i], list[j]);
+                    }
+                }
+            }
         }
     }
     QString s;
@@ -615,73 +624,59 @@ void Gloomhaven::actionByAgile() {
             if (!monsters[i.first-'a'].getAlive()) continue;
             for (const auto& j: monsters[i.first-'a'].getSelected().getSkills()) {
                 if (j.first == "move") {
+                    // monster move
                     Point2d cur = monsters[i.first-'a'].getPos();
                     Point2d tmp(-1, -1);
                     for (const auto& k: j.second) {
                         if (k == 'w') {
-                            if (get(cur.getY() - 1, cur.getX()) == MapData::floor) {
+                            MapData hex = get(cur.getY() - 1, cur.getX());
+                            if (hex == MapData::floor) {
                                 cur.setY(cur.getY() - 1);
-                            } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
-                                int x = cur.getX();
-                                int y = cur.getY() - 1;
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
-                                    cur.setY(cur.getY() - 1);
-                                }
+                            } else if (hex == MapData::monster) {
+                                tmp = cur;
+                                cur.setY(cur.getY() - 1);
+                            } else if (hex == MapData::obstacle || hex == MapData::wall || hex == MapData::door) {
+                                break;
                             }
                         } else if (k == 's') {
-                            if (get(cur.getY() + 1, cur.getX()) == MapData::floor) {
+                            MapData hex = get(cur.getY() + 1, cur.getX());
+                            if (hex == MapData::floor) {
                                 cur.setY(cur.getY() + 1);
-                            } else if (get(cur.getY() - 1, cur.getX()) == MapData::obstacle) {
-                                int x = cur.getX();
-                                int y = cur.getY() + 1;
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
-                                    cur.setY(cur.getY() + 1);
-                                }
+                            } else if (hex == MapData::monster) {
+                                tmp = cur;
+                                cur.setY(cur.getY() + 1);
+                            } else if (hex == MapData::obstacle || hex == MapData::wall || hex == MapData::door) {
+                                break;
                             }
                         } else if (k == 'a') {
-                            if (get(cur.getY(), cur.getX() - 1) == MapData::floor) {
+                            MapData hex = get(cur.getY(), cur.getX() - 1);
+                            if (hex == MapData::floor) {
                                 cur.setX(cur.getX() - 1);
-                            } else if (get(cur.getY(), cur.getX() - 1) == MapData::obstacle) {
-                                int x = cur.getX() - 1;
-                                int y = cur.getY();
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
-                                    cur.setX(cur.getX() - 1);
-                                }
+                            } else if (hex == MapData::monster) {
+                                tmp = cur;
+                                cur.setX(cur.getX() - 1);
+                            } else if (hex == MapData::obstacle || hex == MapData::wall || hex == MapData::door) {
+                                break;
                             }
                         } else if (k == 'd') {
-                            if (get(cur.getY(), cur.getX() + 1) == MapData::floor) {
+                            MapData hex = get(cur.getY(), cur.getX() + 1);
+                            if (hex == MapData::floor) {
                                 cur.setX(cur.getX() + 1);
-                            } else if (get(cur.getY(), cur.getX() + 1) == MapData::obstacle) {
-                                int x = cur.getX() + 1;
-                                int y = cur.getY();
-                                auto it = std::find_if(monsters.begin(), monsters.end(), [x, y](const Monster& u) {
-                                    return u.getPos().getX() == x && u.getPos().getY() == y;
-                                });
-                                if (it != monsters.end()) {
-                                    tmp = cur;
-                                    cur.setX(cur.getX() + 1);
-                                }
+                            } else if (hex == MapData::monster) {
+                                tmp = cur;
+                                cur.setX(cur.getX() + 1);
+                            } else if (hex == MapData::obstacle || hex == MapData::wall || hex == MapData::door) {
+                                break;
                             }
                         }
                     }
-                    if (get(cur) == MapData::obstacle) {
+                    if (get(cur) != MapData::floor && cur != monsters[i.first-'a'].getPos()) {
                        cur = tmp;
                     }
                     Map::data[monsters[i.first-'a'].getPos().getY()][monsters[i.first-'a'].getPos().getX()] = MapData::floor;
                     monsters[i.first-'a'].setPos(cur);
                 } else if (j.first == "attack") {
+                    // monster attack
                     MonsterInfo minfo = monsters[i.first-'a'].getInfo();
                     Point2d cur = monsters[i.first-'a'].getPos();
                     std::vector<Character*> targetList;
