@@ -301,7 +301,7 @@ void Gloomhaven::preGameInput() {
     QString string, mapData;
     bool ok = false;
     do {
-        string = inputDialog->getMultiLineText(this, "請輸入出場角色數量", "出場角色數量及卡牌:", "2\nbrute 0 1 2 3 4 5\nbrute 2 3 4 5 6 7", &ok, inputDialog->windowFlags());
+        string = inputDialog->getMultiLineText(this, "Please Enter Characters Info", "Character Amount and Hand Cards:", "2\nbrute 0 1 2 3 4 5\nbrute 2 3 4 5 6 7", &ok, inputDialog->windowFlags());
     } while (!ok || string.isEmpty());
     if (!string.isEmpty()) {
         QStringList list = string.split("\n");
@@ -331,7 +331,7 @@ void Gloomhaven::preGameInput() {
     }
     /* get the input of the map data */
     do {
-        mapData = inputDialog->getText(this, "請輸入地圖資料", "地圖資料：", QLineEdit::Normal, "map1.txt", &ok, inputDialog->windowFlags());
+        mapData = inputDialog->getText(this, "Please Enter Map Data", "Map Data:", QLineEdit::Normal, "map1.txt", &ok, inputDialog->windowFlags());
     } while (!ok || mapData.isEmpty());
     if (!mapData.isEmpty()) {
         qDebug() << mapData << endl;
@@ -859,7 +859,7 @@ void Gloomhaven::selectAction(int i) {
     ui->listWidget->clear();
     QList<QListWidgetItem*> items;
     QList<QListWidgetItem*> itemsDisabled;
-    QListWidgetItem* rest = new QListWidgetItem("長休");
+    QListWidgetItem* rest = new QListWidgetItem("Rest");
     int cnt = 0;
     if (!characters[i].restable()) {
         QFont font;
@@ -956,7 +956,7 @@ void Gloomhaven::on_confirmButton_released()
 {
     QList<QListWidgetItem*> list = ui->listWidget->selectedItems();
     auto checkRest = std::find_if(list.begin(), list.end(), [](QListWidgetItem* const& u) {
-         return u->text() == "長休";
+         return u->text() == "Rest";
     });
     if ((checkRest != list.end() && list.size() != 1) || (checkRest == list.end() && list.size() != 2)) {
         // (select rest and others) or (no rest and not two cards)
