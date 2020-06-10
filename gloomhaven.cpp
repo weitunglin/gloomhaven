@@ -1000,7 +1000,7 @@ void Gloomhaven::on_confirmButton_released()
         }
         characters[t2].setHp(2);
         ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + QString(i.first) + " heal " + QString::number(j.second) + ", now hp is " + QString::number(healAmount) + "\n");
-        updateStatus;
+        updateStatus();
     }
     if (++t2 < (int)characters.size()) {
         selectAction(t2);
