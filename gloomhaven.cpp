@@ -553,7 +553,7 @@ void Gloomhaven::actionByAgile() {
 //                                        qDebug() << _i << _j;
                                         for (auto& mon: monsters) {
                                             // find which monster is it
-                                            if (mon.getAlive() && mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
+                                            if (mon.getOnCourt() && mon.getAlive() && mon.getPos().getY() == cur.getY() + _i && mon.getPos().getX() == cur.getX() + _j) {
                                                 targetList.push_back(&mon);
                                                 targetOptions.push_back(mon.getId());
                                             }
