@@ -156,9 +156,14 @@ void Gloomhaven::drawBlock(QGraphicsScene* scene, int r, int c, std::vector<Poin
             return;
         }
         if (openDoor) {
-            qDebug() << "open door" << r << c;
-            image = QImage(":/images/map_floor.jpg");
-            Map::data[r][c] = MapData::floor;
+            auto cit = std::find_if(characters.begin(), characters.end(), [=](const Character& u) {
+                return u.getPos() == Point2d(r, c);
+            });
+            if (cit != characters.end()) {
+                qDebug() << "open door" << r << c;
+                image = QImage(":/images/map_floor.jpg");
+                Map::data[r][c] = MapData::floor;
+            }
         }
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(image).scaled(itemWidth - 2, itemHeight - 3));
         item->setPos((QPointF(c * itemWidth, r * itemHeight)));
@@ -801,17 +806,6 @@ void Gloomhaven::checkGameStatus() {
                         if (it != characters.end()) {
                             openDoor = true;
                             showMap();
-                            bool mcheck = true;
-                            for (const auto& i: monsters) {
-                                if (i.getOnCourt() && i.getAlive()) {
-                                    mcheck = false;
-                                }
-                            }
-                            if (mcheck) {
-                                ui->labelBattleInfo->setText(ui->labelBattleInfo->toPlainText() + "characters win\n");
-                                emit endGame("character win~");
-                                return;
-                            }
                             openDoor = false;
                         }
                     }
