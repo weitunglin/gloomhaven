@@ -42,8 +42,6 @@ void PreGame::on_playButton_clicked()
             break;
         }
     } else {
-        ui->textCharacterData->setText("character1.txt");
-        ui->textMonsterData->setText("monster1.txt");
         std::cout << "ok, start game" << std::endl;
         connect(game, SIGNAL(endGame(QString)), this, SLOT(restartGame(QString)));
         game->setFileData(ui->textCharacterData->text(), ui->textMonsterData->text(), ui->inputDebugMode->value());
